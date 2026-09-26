@@ -1,0 +1,367 @@
+<!-- =============================================================
+     ARCHIVO: admin.html (Panel de Administración - Versión 4.8)
+     ============================================================= -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administración v4.8 - TurespuestoYa</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans">
+
+    <header class="bg-slate-900 border-b border-slate-800 p-4 sticky top-0 z-50 shadow-md">
+        <div class="max-w-7xl mx-auto flex flex-wrap justify-between items-center gap-4">
+            <div class="flex items-center gap-2">
+                <span class="text-2xl">⚡</span>
+                <h1 class="text-xl font-black text-amber-500 tracking-wide uppercase">Admin - TurespuestoYa <span class="text-xs bg-amber-500/10 text-amber-400 px-2 py-0.5 rounded-full border border-amber-500/30">v4.8</span></h1>
+            </div>
+            <div class="flex items-center gap-3">
+                <a href="index.html" class="bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold px-3 py-1.5 rounded-xl text-xs transition border border-slate-700">Ver Catálogo 🌐</a>
+                <button id="btnCerrarSesionAdmin" class="bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-slate-950 font-bold px-3 py-1.5 rounded-xl text-xs transition border border-red-500/30 cursor-pointer">Cerrar Sesión 🚪</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto p-4 flex-grow w-full mt-4 flex flex-col gap-6">
+        
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-xl flex flex-col justify-between">
+                <span class="text-xs text-slate-400 font-bold uppercase">Total Tiendas Registradas</span>
+                <span id="statTotalTiendas" class="text-2xl font-black text-white mt-2">0</span>
+            </div>
+            <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-xl flex flex-col justify-between">
+                <span class="text-xs text-slate-400 font-bold uppercase">Tiendas Oficiales Verificadas</span>
+                <span id="statTiendasVerificadas" class="text-2xl font-black text-sky-400 mt-2">0</span>
+            </div>
+            <div class="bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-xl flex flex-col justify-between">
+                <span class="text-xs text-slate-400 font-bold uppercase">Total Publicaciones en Índice</span>
+                <span id="statTotalPublicaciones" class="text-2xl font-black text-amber-400 mt-2">0</span>
+            </div>
+        </div>
+
+        <!-- Sección 1: Publicaciones Reportadas (Prioritarias) -->
+        <section class="bg-slate-900 border border-red-500/50 p-6 rounded-2xl shadow-2xl relative overflow-hidden">
+            <div class="absolute top-0 right-0 bg-red-500 text-slate-950 font-black text-[10px] px-4 py-1 rounded-bl-xl uppercase tracking-wider shadow-lg">⚠️ Zona de Alerta</div>
+            <div class="flex justify-between items-center border-b border-slate-800 pb-4 mb-4">
+                <h2 class="text-base font-black text-red-400 uppercase tracking-wider flex items-center gap-2">🚨 Publicaciones Reportadas (Prioritarias)</h2>
+                <span id="contadorAdminReportes" class="bg-slate-950 text-red-400 font-bold px-3 py-1 rounded-xl text-xs border border-red-500/30">0 reportadas</span>
+            </div>
+
+            <div id="gridAdminReportes" class="flex flex-col gap-3">
+                <p class="text-slate-500 text-xs italic text-center py-6">Cargando publicaciones reportadas...</p>
+            </div>
+        </section>
+
+        <!-- Sección 2: Gestión de Tiendas -->
+        <section class="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-4 mb-4">
+                <h2 class="text-base font-black text-white uppercase tracking-wider flex items-center gap-2">🏢 Gestión de Tiendas del Mercado</h2>
+                <span id="contadorAdminTiendas" class="bg-slate-950 text-slate-400 font-bold px-3 py-1 rounded-xl text-xs border border-slate-800">0 tiendas</span>
+            </div>
+
+            <div id="gridAdminTiendas" class="flex flex-col gap-3">
+                <p class="text-slate-500 text-xs italic text-center py-6">Cargando listado de tiendas...</p>
+            </div>
+        </section>
+
+        <!-- Sección 3: Gestión y Borrado Directo de Publicaciones del Index -->
+        <section class="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-4 mb-4">
+                <h2 class="text-base font-black text-white uppercase tracking-wider flex items-center gap-2">📦 Todas las Publicaciones Activas en el Índice</h2>
+                <span id="contadorAdminPublicaciones" class="bg-slate-950 text-slate-400 font-bold px-3 py-1 rounded-xl text-xs border border-slate-800">0 publicaciones</span>
+            </div>
+
+            <div id="gridAdminPublicaciones" class="flex flex-col gap-3">
+                <p class="text-slate-500 text-xs italic text-center py-6">Cargando publicaciones del catálogo...</p>
+            </div>
+        </section>
+
+    </main>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
+        import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-database.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyB4xzcn6XKdViHsdGnGJukyqcdAOKWtujg",
+            authDomain: "turepuestoya.firebaseapp.com",
+            projectId: "turepuestoya",
+            databaseURL: "https://turepuestoya-default-rtdb.firebaseio.com",
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const auth = getAuth(app);
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                cargarDatosAdmin();
+            } else {
+                window.location.href = "login.html";
+            }
+        });
+
+        document.getElementById('btnCerrarSesionAdmin').addEventListener('click', () => {
+            signOut(auth).then(() => window.location.href = "login.html");
+        });
+
+        function cargarDatosAdmin() {
+            onValue(ref(db), (snapshot) => {
+                const data = snapshot.val() || {};
+                const tiendas = data.tiendas || {};
+                const inventarios = data.inventarios || {};
+
+                // --- 1. RENDERIZAR TIENDAS ---
+                const gridTiendas = document.getElementById('gridAdminTiendas');
+                gridTiendas.innerHTML = "";
+
+                let totalTiendas = 0;
+                let verificadas = 0;
+
+                const keysTiendas = Object.keys(tiendas);
+                totalTiendas = keysTiendas.length;
+
+                if (totalTiendas > 0) {
+                    Object.entries(tiendas).forEach(([uid, tienda]) => {
+                        const isVerified = !!tienda.verified;
+                        const status = tienda.status || 'active';
+
+                        if (isVerified) verificadas++;
+
+                        let estadoBadge = `<span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded text-[10px] font-bold">Activa 🟢</span>`;
+                        if (status === 'paused') estadoBadge = `<span class="bg-amber-500/10 text-amber-400 border border-amber-500/30 px-2 py-0.5 rounded text-[10px] font-bold">Pausada ⏸️</span>`;
+                        if (status === 'blocked') estadoBadge = `<span class="bg-red-500/10 text-red-400 border border-red-500/30 px-2 py-0.5 rounded text-[10px] font-bold">Bloqueada 🚫</span>`;
+
+                        const badgeVerificado = isVerified 
+                            ? `<span class="bg-sky-500 text-slate-950 font-black px-2 py-0.5 rounded-full text-[9px]">✓ Oficial Verificada</span>` 
+                            : `<span class="text-slate-500 text-[9px]">Tienda Estándar</span>`;
+
+                        gridTiendas.innerHTML += `
+                            <div class="bg-slate-950 border border-slate-800 p-4 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shadow-md">
+                                <div class="flex flex-col gap-1">
+                                    <div class="flex items-center gap-2 flex-wrap">
+                                        <h3 class="text-sm font-black text-white uppercase">${tienda.nombreTienda || 'Sin Nombre'}</h3>
+                                        ${badgeVerificado}
+                                        ${estadoBadge}
+                                    </div>
+                                    <p class="text-xs text-slate-400">📧 ${tienda.email || 'Correo no registrado'} | 📍 ${tienda.ciudad || 'Ciudad no especificada'}</p>
+                                    <p class="text-[10px] text-slate-500">📞 WhatsApp: ${tienda.telefonoWsp || 'No especificado'} | Dirección: ${tienda.direccionFisica || 'No especificada'}</p>
+                                </div>
+                                <div class="flex flex-wrap items-center gap-2 w-full md:w-auto justify-end">
+                                    <button onclick='toggleVerificarTienda("${uid}", ${!isVerified})' class="bg-sky-600/20 hover:bg-sky-600 text-sky-400 hover:text-white font-bold px-3 py-1.5 rounded-xl text-xs transition border border-sky-500/30 cursor-pointer">
+                                        ${isVerified ? 'Quitar Verificación ✕' : 'Verificar Tienda ✓'}
+                                    </button>
+                                    <button onclick='cambiarEstadoTienda("${uid}", "${status === 'active' ? 'paused' : 'active'}")' class="bg-amber-500/20 hover:bg-amber-500 text-amber-400 hover:text-slate-950 font-bold px-3 py-1.5 rounded-xl text-xs transition border border-amber-500/30 cursor-pointer">
+                                        ${status === 'active' ? 'Pausar ⏸️' : 'Reactivar ▶️'}
+                                    </button>
+                                    <button onclick='cambiarEstadoTienda("${uid}", "${status === 'blocked' ? 'active' : 'blocked'}")' class="bg-red-500/20 hover:bg-red-500 text-red-400 hover:text-white font-bold px-3 py-1.5 rounded-xl text-xs transition border border-red-500/30 cursor-pointer">
+                                        ${status === 'blocked' ? 'Desbloquear 🔓' : 'Bloquear 🚫'}
+                                    </button>
+                                    <button onclick='eliminarCuentaTienda("${uid}", "${tienda.nombreTienda || 'Sin Nombre'}")' class="bg-red-950/40 hover:bg-red-600 text-red-400 hover:text-white font-bold px-3 py-1.5 rounded-xl text-xs transition border border-red-800/50 cursor-pointer">
+                                        Eliminar Cuenta 🗑️
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    });
+                } else {
+                    gridTiendas.innerHTML = `<p class="text-slate-500 text-xs italic text-center py-6">No hay tiendas registradas en la base de datos.</p>`;
+                }
+
+                // --- 2. RECOPILAR Y SEPARAR PUBLICACIONES (Reportadas vs Normales) ---
+                const gridReportes = document.getElementById('gridAdminReportes');
+                const gridPubs = document.getElementById('gridAdminPublicaciones');
+                gridReportes.innerHTML = "";
+                gridPubs.innerHTML = "";
+
+                let totalPubs = 0;
+                let totalReportadas = 0;
+                let listaReportadas = [];
+                let listaNormales = [];
+
+                Object.entries(inventarios).forEach(([uidTienda, repuestos]) => {
+                    const infoTienda = tiendas[uidTienda] || {};
+                    const nombreTienda = infoTienda.nombreTienda || 'Tienda Desconocida';
+
+                    Object.entries(repuestos).forEach(([idProd, prod]) => {
+                        totalPubs++;
+                        const reportesObj = prod.reportes || {};
+                        const cantidadReportes = Object.keys(reportesObj).length;
+
+                        const itemPub = {
+                            uidTienda,
+                            idProd,
+                            prod,
+                            nombreTienda,
+                            cantidadReportes,
+                            reportesObj
+                        };
+
+                        if (cantidadReportes > 0) {
+                            totalReportadas++;
+                            listaReportadas.push(itemPub);
+                        } else {
+                            listaNormales.push(itemPub);
+                        }
+                    });
+                });
+
+                // Ordenar las reportadas de mayor a menor número de reportes
+                listaReportadas.sort((a, b) => b.cantidadReportes - a.cantidadReportes);
+
+                // --- RENDERIZAR REPORTADAS PRIMERO ---
+                if (listaReportadas.length > 0) {
+                    listaReportadas.forEach(item => {
+                        const { uidTienda, idProd, prod, nombreTienda, cantidadReportes, reportesObj } = item;
+                        const nombreProd = prod.nombre ? prod.nombre.toUpperCase() : 'Sin Nombre';
+                        const categoria = prod.categoria || 'General';
+                        const precio = parseFloat(prod.precio) || 0;
+
+                        // Construir lista de motivos de los reportes
+                        let motivosHtml = '<ul class="text-[11px] text-red-300 list-disc list-inside mt-1 bg-red-950/30 p-2 rounded-xl border border-red-500/20">';
+                        Object.values(reportesObj).forEach(rep => {
+                            motivosHtml += `<li><strong>${rep.fecha || 'Fecha desconocida'}:</strong> ${rep.motivo}</li>`;
+                        });
+                        motivosHtml += '</ul>';
+
+                        gridReportes.innerHTML += `
+                            <div class="bg-slate-950 border border-red-500/80 p-4 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shadow-lg">
+                                <div class="flex flex-col gap-1 w-full md:w-3/4">
+                                    <div class="flex items-center gap-2 flex-wrap">
+                                        <h3 class="text-sm font-black text-white uppercase">${nombreProd}</h3>
+                                        <span class="bg-red-500 text-slate-950 font-black px-2 py-0.5 rounded text-[10px]">🚨 ${cantidadReportes} ${cantidadReportes === 1 ? 'Reporte' : 'Reportes'}</span>
+                                        <span class="bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2 py-0.5 rounded text-[10px] font-bold">${categoria}</span>
+                                    </div>
+                                    <p class="text-xs text-slate-400">🏢 Tienda: <strong class="text-slate-200">${nombreTienda}</strong> | 💵 Precio: <strong class="text-emerald-400">$${precio.toFixed(2)}</strong></p>
+                                    <div class="mt-1">
+                                        <span class="text-[10px] font-bold uppercase text-red-400 tracking-wider">Motivos de los usuarios:</span>
+                                        ${motivosHtml}
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-2 w-full md:w-auto justify-end">
+                                    <button onclick='eliminarPublicacionIndividual("${uidTienda}", "${idProd}", "${nombreProd}")' class="bg-red-600 hover:bg-red-500 text-slate-950 font-black px-4 py-2 rounded-xl text-xs transition shadow-md cursor-pointer">
+                                        Eliminar Publicación 🗑️
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    });
+                } else {
+                    gridReportes.innerHTML = `<p class="text-slate-500 text-xs italic text-center py-6">No hay publicaciones reportadas actualmente en el sistema.</p>`;
+                }
+
+                // --- RENDERIZAR PUBLICACIONES RESTANTES (NORMALES) ---
+                if (listaNormales.length > 0) {
+                    listaNormales.forEach(item => {
+                        const { uidTienda, idProd, prod, nombreTienda } = item;
+                        const nombreProd = prod.nombre ? prod.nombre.toUpperCase() : 'Sin Nombre';
+                        const categoria = prod.categoria || 'General';
+                        const precio = parseFloat(prod.precio) || 0;
+                        const stock = prod.stock || 0;
+
+                        gridPubs.innerHTML += `
+                            <div class="bg-slate-950 border border-slate-800 p-4 rounded-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-md">
+                                <div class="flex flex-col gap-1">
+                                    <div class="flex items-center gap-2 flex-wrap">
+                                        <h3 class="text-sm font-black text-white uppercase">${nombreProd}</h3>
+                                        <span class="bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2 py-0.5 rounded text-[10px] font-bold">${categoria}</span>
+                                    </div>
+                                    <p class="text-xs text-slate-400">🏢 Tienda: <strong class="text-slate-200">${nombreTienda}</strong> | 💵 Precio: <strong class="text-emerald-400">$${precio.toFixed(2)}</strong> | 📦 Stock: ${stock}</p>
+                                </div>
+                                <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+                                    <button onclick='eliminarPublicacionIndividual("${uidTienda}", "${idProd}", "${nombreProd}")' class="bg-red-950/40 hover:bg-red-600 text-red-400 hover:text-white font-bold px-3 py-1.5 rounded-xl text-xs transition border border-red-800/50 cursor-pointer">
+                                        Eliminar Publicación 🗑️
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    });
+                } else {
+                    gridPubs.innerHTML = `<p class="text-slate-500 text-xs italic text-center py-6">No hay otras publicaciones en el índice.</p>`;
+                }
+
+                // Actualizar contadores superiores y de sección
+                document.getElementById('statTotalTiendas').innerText = totalTiendas;
+                document.getElementById('statTiendasVerificadas').innerText = verificadas;
+                document.getElementById('statTotalPublicaciones').innerText = totalPubs;
+                document.getElementById('contadorAdminTiendas').innerText = `${totalTiendas} tiendas`;
+                document.getElementById('contadorAdminPublicaciones').innerText = `${listaNormales.length} publicaciones normales`;
+                document.getElementById('contadorAdminReportes').innerText = `${totalReportadas} reportadas`;
+            });
+        }
+
+        window.toggleVerificarTienda = function(uid, nuevoEstado) {
+            update(ref(db, `tiendas/${uid}`), { verified: nuevoEstado })
+                .then(() => alert(nuevoEstado ? "¡Tienda marcada como Oficial Verificada!" : "Verificación retirada."))
+                .catch(err => alert("Error: " + err.message));
+        };
+
+        window.cambiarEstadoTienda = function(uid, nuevoEstado) {
+            let mensajeSugerido = "";
+            if (nuevoEstado === 'paused') {
+                mensajeSugerido = "Tu tienda ha sido pausada temporalmente por revisión de inventario.";
+            } else if (nuevoEstado === 'blocked') {
+                mensajeSugerido = "Tu tienda ha sido bloqueada por incumplimiento de normas de la plataforma.";
+            } else if (nuevoEstado === 'active') {
+                mensajeSugerido = "¡Tu tienda ha sido reactivada con éxito! Ya puedes operar con normalidad.";
+            }
+
+            let mensajeAdmin = prompt("Escribe el mensaje de notificación para la tienda:", mensajeSugerido);
+            if (mensajeAdmin === null) return; 
+
+            if (mensajeAdmin.trim() === "") {
+                mensajeAdmin = "El estado de tu tienda ha cambiado a: " + nuevoEstado;
+            }
+
+            const datosNotificacion = {
+                mensaje: mensajeAdmin,
+                estado: nuevoEstado,
+                fecha: new Date().toLocaleString(),
+                timestamp: Date.now()
+            };
+
+            const updates = {};
+            updates[`tiendas/${uid}/status`] = nuevoEstado;
+            updates[`notificaciones_tienda/${uid}`] = datosNotificacion;
+
+            update(ref(db), updates)
+                .then(() => alert(`Estado actualizado a "${nuevoEstado}" y mensaje enviado a la tienda.`))
+                .catch(err => alert("Error: " + err.message));
+        };
+
+        window.eliminarCuentaTienda = function(uid, nombreTienda) {
+            const confirmacion1 = confirm(`¿Estás seguro de que deseas eliminar permanentemente la tienda "${nombreTienda}"?`);
+            if (!confirmacion1) return;
+
+            const confirmacion2 = confirm(`ADVERTENCIA: Se borrarán la cuenta, las notificaciones y todo el inventario del índice asociado a "${nombreTienda}". ¿Confirmas?`);
+            if (!confirmacion2) return;
+
+            const updates = {};
+            updates[`tiendas/${uid}`] = null;
+            updates[`notificaciones_tienda/${uid}`] = null;
+            updates[`productos/${uid}`] = null;
+            updates[`inventarios/${uid}`] = null;
+
+            update(ref(db), updates)
+                .then(() => alert("La cuenta y su inventario han sido eliminados con éxito."))
+                .catch(err => alert("Error al eliminar: " + err.message));
+        };
+
+        window.eliminarPublicacionIndividual = function(uidTienda, idProd, nombreProd) {
+            const confirmacion = confirm(`¿Deseas eliminar la publicación "${nombreProd}" del catálogo público?`);
+            if (!confirmacion) return;
+
+            const updates = {};
+            updates[`inventarios/${uidTienda}/${idProd}`] = null;
+            updates[`productos/${uidTienda}/${idProd}`] = null;
+
+            update(ref(db), updates)
+                .then(() => alert("La publicación ha sido eliminada del índice exitosamente."))
+                .catch(err => alert("Error al eliminar la publicación: " + err.message));
+        };
+    </script>
+</body>
+</html>

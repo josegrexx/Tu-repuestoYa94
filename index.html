@@ -1,0 +1,662 @@
+<!-- =============================================================
+     ARCHIVO: index.html (Versión 4.3 - Reporte de Publicaciones añadido)
+     ============================================================= -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catálogo Oficial - TurespuestoYa</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+        /* Animación del rayo cruzando el texto */
+        @keyframes rayo-cruce {
+            0% { transform: translateX(-150%) skewX(-20deg); opacity: 0; }
+            50% { opacity: 1; }
+            100% { transform: translateX(250%) skewX(-20deg); opacity: 0; }
+        }
+        .animacion-rayo {
+            animation: rayo-cruce 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        /* Animación sutil flotante / pulso para las tarjetas de categorías */
+        @keyframes pulso-suave {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.03); }
+        }
+        .cat-card-active {
+            box-shadow: 0 0 20px rgba(245, 158, 11, 0.3);
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans">
+
+    <!-- Header Público -->
+    <header class="bg-slate-900 border-b border-slate-800 p-4 sticky top-0 z-50 shadow-md">
+        <div class="max-w-7xl mx-auto flex flex-wrap justify-between items-center gap-4">
+            
+            <!-- Logo con Animación de Rayo Cruzando -->
+            <div class="flex items-center gap-3">
+                <span class="text-2xl animate-bounce">⚡</span>
+                <h1 class="text-xl font-black tracking-wider uppercase relative overflow-hidden px-3 py-1 rounded-xl bg-slate-950 border border-amber-500/30 shadow-inner">
+                    <!-- Texto base con degradado llamativo -->
+                    <span class="bg-gradient-to-r from-amber-400 via-yellow-200 to-amber-500 bg-clip-text text-transparent drop-shadow-[0_2px_10px_rgba(245,158,11,0.4)]">
+                        TurespuestoYa
+                    </span>
+                    <!-- Destello de luz / rayo cruzando por el medio -->
+                    <div class="absolute inset-0 w-1/2 h-full bg-gradient-to-r from-transparent via-white/80 to-transparent animacion-rayo pointer-events-none"></div>
+                </h1>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <a href="registro.html" class="bg-emerald-500/10 hover:bg-emerald-500 text-emerald-400 hover:text-slate-950 font-bold px-3 py-1.5 rounded-xl text-xs transition border border-emerald-500/30">Registrar tienda 🏪</a>
+                <a href="login.html" class="bg-amber-500/10 hover:bg-amber-500 text-amber-400 hover:text-slate-950 font-bold px-3 py-1.5 rounded-xl text-xs transition border border-amber-500/30">Acceso Tiendas 🔐</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Barra de Búsqueda y Filtro de Ciudad -->
+    <section class="max-w-7xl mx-auto px-4 mt-6 w-full flex flex-col lg:flex-row gap-3 items-center justify-between">
+        <div class="w-full lg:w-1/2 relative">
+            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">🔍</span>
+            <input type="text" id="inputBuscar" placeholder="Buscar repuesto, marca o modelo..." class="w-full bg-slate-900 border border-slate-800 rounded-2xl pl-10 pr-4 py-3 text-slate-100 focus:border-amber-500 focus:outline-none text-xs">
+        </div>
+
+        <div class="w-full lg:w-auto">
+            <button id="btnAbrirModalCiudad" class="bg-slate-900 hover:bg-slate-800 text-amber-400 font-bold px-4 py-3 rounded-2xl text-xs transition border border-slate-800 flex items-center justify-between gap-3 cursor-pointer w-full lg:w-auto shadow-md">
+                <span class="flex items-center gap-1.5">📍 Filtrar por Ciudad: <strong id="labelCiudadActual" class="text-white">Todas</strong></span>
+                <span class="text-slate-400">▼</span>
+            </button>
+        </div>
+    </section>
+
+    <!-- Sección de Categorías con Tarjetas Animadas e Iconos -->
+    <section class="max-w-7xl mx-auto px-4 mt-6 w-full">
+        <div class="flex items-center justify-between mb-3">
+            <h2 class="text-xs font-black text-slate-400 uppercase tracking-wider flex items-center gap-2">
+                <span>📂</span> Categorías Principales
+            </h2>
+        </div>
+        <div id="categoriasFiltro" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+            
+            <!-- Todas las Categorías -->
+            <div class="filtro-cat group bg-amber-500 text-slate-950 p-3.5 rounded-2xl border border-amber-400 cursor-pointer transition-all duration-300 hover:scale-[1.03] flex items-center gap-3 shadow-lg cat-card-active" data-cat="Todos">
+                <div class="w-9 h-9 rounded-xl bg-slate-950/20 flex items-center justify-center text-lg shrink-0">🌐</div>
+                <div class="overflow-hidden">
+                    <span class="text-[10px] uppercase font-bold opacity-75 block">Explorar</span>
+                    <h4 class="text-xs font-black truncate">Todas</h4>
+                </div>
+            </div>
+
+            <!-- Motor -->
+            <div class="filtro-cat group bg-slate-900 hover:bg-slate-800 text-slate-200 p-3.5 rounded-2xl border border-slate-800 hover:border-amber-500/50 cursor-pointer transition-all duration-300 hover:scale-[1.03] flex items-center gap-3 shadow-md" data-cat="Motor">
+                <div class="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center text-lg shrink-0 group-hover:rotate-12 transition-transform">⚙️</div>
+                <div class="overflow-hidden">
+                    <span class="text-[10px] uppercase font-bold text-slate-500 block">Sistema</span>
+                    <h4 class="text-xs font-black truncate group-hover:text-amber-400 transition-colors">Motor</h4>
+                </div>
+            </div>
+
+            <!-- Frenos -->
+            <div class="filtro-cat group bg-slate-900 hover:bg-slate-800 text-slate-200 p-3.5 rounded-2xl border border-slate-800 hover:border-amber-500/50 cursor-pointer transition-all duration-300 hover:scale-[1.03] flex items-center gap-3 shadow-md" data-cat="Frenos">
+                <div class="w-9 h-9 rounded-xl bg-red-500/10 text-red-400 flex items-center justify-center text-lg shrink-0 group-hover:-rotate-12 transition-transform">🛑</div>
+                <div class="overflow-hidden">
+                    <span class="text-[10px] uppercase font-bold text-slate-500 block">Seguridad</span>
+                    <h4 class="text-xs font-black truncate group-hover:text-amber-400 transition-colors">Frenos</h4>
+                </div>
+            </div>
+
+            <!-- Suspensión -->
+            <div class="filtro-cat group bg-slate-900 hover:bg-slate-800 text-slate-200 p-3.5 rounded-2xl border border-slate-800 hover:border-amber-500/50 cursor-pointer transition-all duration-300 hover:scale-[1.03] flex items-center gap-3 shadow-md" data-cat="Suspensión">
+                <div class="w-9 h-9 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center text-lg shrink-0 group-hover:rotate-12 transition-transform">🔩</div>
+                <div class="overflow-hidden">
+                    <span class="text-[10px] uppercase font-bold text-slate-500 block">Estabilidad</span>
+                    <h4 class="text-xs font-black truncate group-hover:text-amber-400 transition-colors">Suspensión</h4>
+                </div>
+            </div>
+
+            <!-- Eléctrico -->
+            <div class="filtro-cat group bg-slate-900 hover:bg-slate-800 text-slate-200 p-3.5 rounded-2xl border border-slate-800 hover:border-amber-500/50 cursor-pointer transition-all duration-300 hover:scale-[1.03] flex items-center gap-3 shadow-md" data-cat="Eléctrico">
+                <div class="w-9 h-9 rounded-xl bg-yellow-500/10 text-yellow-400 flex items-center justify-center text-lg shrink-0 group-hover:scale-125 transition-transform">⚡</div>
+                <div class="overflow-hidden">
+                    <span class="text-[10px] uppercase font-bold text-slate-500 block">Energía</span>
+                    <h4 class="text-xs font-black truncate group-hover:text-amber-400 transition-colors">Eléctrico</h4>
+                </div>
+            </div>
+
+            <!-- Accesorios -->
+            <div class="filtro-cat group bg-slate-900 hover:bg-slate-800 text-slate-200 p-3.5 rounded-2xl border border-slate-800 hover:border-amber-500/50 cursor-pointer transition-all duration-300 hover:scale-[1.03] flex items-center gap-3 shadow-md col-span-2 sm:col-span-1" data-cat="Accesorios">
+                <div class="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-lg shrink-0 group-hover:rotate-45 transition-transform">🧰</div>
+                <div class="overflow-hidden">
+                    <span class="text-[10px] uppercase font-bold text-slate-500 block">General</span>
+                    <h4 class="text-xs font-black truncate group-hover:text-amber-400 transition-colors">Accesorios</h4>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Banner Indicador cuando se filtra por Tienda Específica -->
+    <div id="bannerFiltroTienda" class="max-w-7xl mx-auto px-4 mt-4 w-full hidden">
+        <div class="bg-amber-500/10 border border-amber-500/30 p-3.5 rounded-2xl flex justify-between items-center text-xs shadow-lg">
+            <span class="text-amber-400 font-bold">🏢 Viendo productos de la tienda: <strong id="labelTiendaActiva" class="text-white uppercase"></strong></span>
+            <button onclick="resetearFiltroTienda()" class="bg-slate-900 hover:bg-slate-800 text-amber-400 font-bold px-3 py-1.5 rounded-xl border border-slate-800 cursor-pointer transition shadow-sm">Ver todas las tiendas ✕</button>
+        </div>
+    </div>
+
+    <!-- Modal para Seleccionar Ciudad -->
+    <div id="modalFiltroCiudad" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden justify-center items-center p-4 z-50">
+        <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl max-w-sm w-full flex flex-col gap-4 shadow-2xl">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                <h3 class="text-base font-black text-white flex items-center gap-2">📍 Seleccionar Ciudad de Venezuela</h3>
+                <button onclick="cerrarModalCiudad()" class="text-slate-400 hover:text-white text-lg font-bold px-2 cursor-pointer">✕</button>
+            </div>
+            <div id="listaBotonesCiudad" class="flex flex-col gap-2 max-h-72 overflow-y-auto pr-1">
+                <button class="opcion-ciudad text-left bg-amber-500 text-slate-950 font-bold px-4 py-3 rounded-xl text-xs transition cursor-pointer" data-ciudad="Todas">🌐 Todas las Ciudades</button>
+                <button class="opcion-ciudad text-left bg-slate-950 hover:bg-slate-800 text-slate-200 font-bold px-4 py-3 rounded-xl text-xs transition border border-slate-800 cursor-pointer" data-ciudad="San Cristóbal">San Cristóbal</button>
+                <button class="opcion-ciudad text-left bg-slate-950 hover:bg-slate-800 text-slate-200 font-bold px-4 py-3 rounded-xl text-xs transition border border-slate-800 cursor-pointer" data-ciudad="Maracay">Maracay</button>
+                <button class="opcion-ciudad text-left bg-slate-950 hover:bg-slate-800 text-slate-200 font-bold px-4 py-3 rounded-xl text-xs transition border border-slate-800 cursor-pointer" data-ciudad="Valencia">Valencia</button>
+                <button class="opcion-ciudad text-left bg-slate-950 hover:bg-slate-800 text-slate-200 font-bold px-4 py-3 rounded-xl text-xs transition border border-slate-800 cursor-pointer" data-ciudad="Caracas">Caracas</button>
+                <button class="opcion-ciudad text-left bg-slate-950 hover:bg-slate-800 text-slate-200 font-bold px-4 py-3 rounded-xl text-xs transition border border-slate-800 cursor-pointer" data-ciudad="Barquisimeto">Barquisimeto</button>
+                <button class="opcion-ciudad text-left bg-slate-950 hover:bg-slate-800 text-slate-200 font-bold px-4 py-3 rounded-xl text-xs transition border border-slate-800 cursor-pointer" data-ciudad="Maracaibo">Maracaibo</button>
+                <button class="opcion-ciudad text-left bg-slate-950 hover:bg-slate-800 text-slate-200 font-bold px-4 py-3 rounded-xl text-xs transition border border-slate-800 cursor-pointer" data-ciudad="Mérida">Mérida</button>
+                <button class="opcion-ciudad text-left bg-slate-950 hover:bg-slate-800 text-slate-200 font-bold px-4 py-3 rounded-xl text-xs transition border border-slate-800 cursor-pointer" data-ciudad="Barinas">Barinas</button>
+                <button class="opcion-ciudad text-left bg-slate-950 hover:bg-slate-800 text-slate-200 font-bold px-4 py-3 rounded-xl text-xs transition border border-slate-800 cursor-pointer" data-ciudad="Puerto La Cruz">Puerto La Cruz</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Catálogo de Repuestos -->
+    <main class="max-w-7xl mx-auto p-4 flex-grow w-full mt-2">
+        <div id="gridCatalogo" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <p class="text-slate-500 text-xs italic col-span-full text-center py-10">Cargando repuestos disponibles...</p>
+        </div>
+    </main>
+
+    <!-- Modal Zoom Imagen -->
+    <div id="modalZoomImagen" class="fixed inset-0 bg-black/90 backdrop-blur-md hidden justify-center items-center p-4 z-50">
+        <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl max-w-2xl w-full flex flex-col gap-3 shadow-2xl relative">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+                <h3 id="zoomTituloProd" class="text-sm font-black text-amber-500 truncate">Detalle de Imagen</h3>
+                <button onclick="cerrarZoomImagen()" class="text-slate-400 hover:text-white text-lg font-bold px-2 cursor-pointer">✕</button>
+            </div>
+            <div class="w-full h-[65vh] bg-slate-950 rounded-xl flex items-center justify-center overflow-hidden border border-slate-800 p-2">
+                <img id="zoomImagenSrc" src="" class="max-w-full max-h-full object-contain select-none">
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para Reportar Publicación -->
+    <div id="modalReporte" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden justify-center items-center p-4 z-50">
+        <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl max-w-md w-full flex flex-col gap-4 shadow-2xl">
+            <div class="flex justify-between items-start">
+                <div>
+                    <span class="text-[10px] uppercase font-bold text-red-500 tracking-wider">Reportar Producto</span>
+                    <h3 id="modalReporteTituloProd" class="text-base font-black text-white uppercase">Nombre del Repuesto</h3>
+                </div>
+                <button onclick="cerrarModalReporte()" class="text-slate-400 hover:text-white text-lg font-bold px-2 cursor-pointer">✕</button>
+            </div>
+            
+            <div class="bg-red-500/10 border border-red-500/30 p-3 rounded-xl text-xs text-red-300">
+                ⚠️ Estás a punto de reportar esta publicación ante la administración por incumplimiento, precio engañoso, producto agotado o estafa.
+            </div>
+
+            <div>
+                <label class="text-xs text-slate-400 font-bold mb-1 block">Selecciona o escribe el motivo:</label>
+                <select id="selectMotivoPredefinido" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-slate-100 text-xs focus:border-amber-500 focus:outline-none mb-2">
+                    <option value="Precio engañoso o incorrecto">Precio engañoso o incorrecto</option>
+                    <option value="Producto agotado / No atienden">Producto agotado / No responden</option>
+                    <option value="Información o foto falsa">Información o foto falsa</option>
+                    <option value="Posible estafa">Posible estafa</option>
+                    <option value="Otro motivo">Otro motivo</option>
+                </select>
+                <textarea id="repMotivoDetalle" rows="3" placeholder="Describe brevemente el motivo del reporte..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-slate-100 text-xs focus:border-amber-500 focus:outline-none resize-none"></textarea>
+            </div>
+
+            <button id="btnEnviarReporte" class="bg-red-500 hover:bg-red-400 text-slate-950 font-black py-3 rounded-xl transition text-xs shadow-lg shadow-red-500/20 cursor-pointer">
+                Enviar Reporte al Administrador 🚨
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal para Solicitar Delivery -->
+    <div id="modalPedido" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden justify-center items-center p-4 z-50">
+        <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl max-w-md w-full flex flex-col gap-4 shadow-2xl">
+            <div class="flex justify-between items-start">
+                <div>
+                    <span id="modalCatTag" class="text-[10px] uppercase font-bold text-amber-500 tracking-wider">Solicitar Delivery</span>
+                    <h3 id="modalTituloProd" class="text-lg font-black text-white uppercase">Nombre del Repuesto</h3>
+                </div>
+                <button onclick="cerrarModal()" class="text-slate-400 hover:text-white text-lg font-bold px-2 cursor-pointer">✕</button>
+            </div>
+            
+            <div id="modalInfoDescuento" class="bg-red-500/10 border border-red-500/30 p-2.5 rounded-xl text-xs hidden flex items-center justify-between">
+                <span class="text-red-400 font-bold">🔥 Oferta Aplicada (-<span id="modalValDesc">0</span>%)</span>
+                <span class="text-slate-300">Precio Anterior: <span class="line-through">$<span id="modalPrecioOrig">0</span></span></span>
+            </div>
+
+            <div class="bg-slate-950 border border-slate-800 p-3 rounded-xl flex justify-between items-center text-xs">
+                <span class="text-slate-400 font-bold">Precio Total:</span>
+                <span id="modalPrecioProd" class="text-emerald-400 font-black text-lg">$0.00</span>
+            </div>
+
+            <div class="flex flex-col gap-3">
+                <div>
+                    <label class="text-xs text-slate-400 font-bold mb-1 block">Tu Nombre y Apellido</label>
+                    <input type="text" id="pedCliente" placeholder="Ej. Carlos Pérez" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-slate-100 text-xs focus:border-amber-500 focus:outline-none">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-xs text-slate-400 font-bold mb-1 block">Teléfono / WhatsApp</label>
+                        <input type="text" id="pedTelefono" placeholder="Ej. 04121234567" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-slate-100 text-xs focus:border-amber-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="text-xs text-slate-400 font-bold mb-1 block">Ciudad</label>
+                        <input type="text" id="pedCiudad" placeholder="Ej. San Cristóbal" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-slate-100 text-xs focus:border-amber-500 focus:outline-none">
+                    </div>
+                </div>
+                <div>
+                    <label class="text-xs text-slate-400 font-bold mb-1 block">Dirección de Envío / Notas</label>
+                    <textarea id="pedDireccion" rows="2" placeholder="Ej. Barrio La Concordia, calle principal..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-slate-100 text-xs focus:border-amber-500 focus:outline-none resize-none"></textarea>
+                </div>
+            </div>
+
+            <button id="btnEnviarPedido" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-3 rounded-xl transition text-xs shadow-lg shadow-amber-500/20 cursor-pointer">
+                Solicitar Delivery 🚚
+            </button>
+        </div>
+    </div>
+
+    <!-- Script de Firebase y Lógica -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
+        import { getDatabase, ref, onValue, push } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyB4xzcn6XKdViHsdGnGJukyqcdAOKWtujg",
+            authDomain: "turepuestoya.firebaseapp.com",
+            projectId: "turepuestoya",
+            databaseURL: "https://turepuestoya-default-rtdb.firebaseio.com",
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        let inventarioGlobal = [];
+        let categoriaSeleccionada = "Todos";
+        let ciudadSeleccionada = "Todas";
+        let tiendaFiltroUid = "Todas";
+        let productoSeleccionado = null;
+        let productoAReportar = null;
+
+        onValue(ref(db), (snapshot) => {
+            const data = snapshot.val() || {};
+            const tiendas = data.tiendas || {};
+            const inventarios = data.inventarios || {};
+
+            inventarioGlobal = [];
+
+            Object.entries(inventarios).forEach(([uidTienda, repuestos]) => {
+                const infoTienda = tiendas[uidTienda] || {};
+                
+                const estadoTienda = infoTienda.status || 'active';
+                if (estadoTienda === 'blocked' || estadoTienda === 'paused') {
+                    return;
+                }
+                
+                Object.entries(repuestos).forEach(([idProd, prod]) => {
+                    if (parseInt(prod.stock) > 0) {
+                        inventarioGlobal.push({
+                            id: idProd,
+                            uidTienda: uidTienda,
+                            nombreTienda: infoTienda.nombreTienda || 'Tienda Oficial',
+                            ciudadTienda: infoTienda.ciudad || 'San Cristóbal',
+                            direccionFisica: infoTienda.direccionFisica || 'Ubicación no especificada',
+                            telefonoWsp: infoTienda.telefonoWsp || '',
+                            verified: !!infoTienda.verified,
+                            ...prod
+                        });
+                    }
+                });
+            });
+
+            renderizarCatalogo();
+        });
+
+        function renderizarCatalogo() {
+            const grid = document.getElementById('gridCatalogo');
+            const busqueda = document.getElementById('inputBuscar').value.toLowerCase().trim();
+            grid.innerHTML = "";
+
+            const filtrados = inventarioGlobal.filter(p => {
+                const coincideCat = categoriaSeleccionada === "Todos" || p.categoria === categoriaSeleccionada;
+                const coincideCiudad = ciudadSeleccionada === "Todas" || p.ciudadTienda === ciudadSeleccionada;
+                const coincideTienda = tiendaFiltroUid === "Todas" || p.uidTienda === tiendaFiltroUid;
+                const coincideBusqueda = p.nombre.toLowerCase().includes(busqueda) || p.categoria.toLowerCase().includes(busqueda) || p.ciudadTienda.toLowerCase().includes(busqueda) || p.nombreTienda.toLowerCase().includes(busqueda);
+                return coincideCat && coincideCiudad && coincideTienda && coincideBusqueda;
+            }).sort((a, b) => {
+                const aVerif = a.verified ? 1 : 0;
+                const bVerif = b.verified ? 1 : 0;
+                return bVerif - aVerif;
+            });
+
+            if (filtrados.length > 0) {
+                filtrados.forEach(prod => {
+                    const stock = parseInt(prod.stock) || 0;
+                    const descVal = parseInt(prod.descuento) || 0;
+                    const precioOriginal = parseFloat(prod.precio) || 0;
+                    const precioFinal = descVal > 0 ? precioOriginal * (1 - descVal / 100) : precioOriginal;
+                    
+                    const nombreMayus = prod.nombre ? prod.nombre.toUpperCase() : '';
+                    const reportesCount = prod.reportes ? Object.keys(prod.reportes).length : 0;
+                    const tieneAdvertencia = reportesCount > 0;
+
+                    const insigniaVerificado = prod.verified 
+                        ? `<span class="bg-sky-500 text-slate-950 font-black px-1.5 py-0.5 rounded-full text-[10px] inline-flex items-center justify-center shadow-sm ml-1" title="Tienda Oficial Verificada">✓</span>` 
+                        : '';
+
+                    const alertaAdvertenciaCard = tieneAdvertencia 
+                        ? `<div class="bg-red-500/20 border border-red-500 text-red-400 text-[10px] font-black px-2.5 py-1 rounded-xl text-center uppercase tracking-wider mb-3 flex items-center justify-center gap-1.5 shadow-lg animate-pulse"><span>⚠️</span> ADVERTENCIA: Esta publicación ha sido reportada (${reportesCount})</div>` 
+                        : '';
+
+                    const alertaStockBajo = stock <= 5 
+                        ? `<div class="bg-red-500/20 border border-red-500/40 text-red-400 text-[10px] font-black px-2.5 py-1 rounded-xl text-center uppercase tracking-wider animate-pulse mb-3 flex items-center justify-center gap-1.5 shadow-md"><span>⚠️</span> ¡Últimas disponibles! (${stock})</div>` 
+                        : '';
+
+                    let tagsHtml = '';
+                    if (prod.ofreceDelivery) tagsHtml += `<span class="bg-blue-500/10 text-blue-400 px-2.5 py-1 rounded-md text-[10px] border border-blue-500/20 font-bold">Delivery 🚚</span>`;
+                    if (prod.retiroTienda) tagsHtml += `<span class="bg-purple-500/15 text-purple-300 px-2.5 py-1 rounded-md text-[10px] border border-purple-500/30 font-bold">Retiro 🏢</span>`;
+
+                    let precioHtml = `<span class="text-emerald-400 font-black text-2xl">$${precioOriginal.toFixed(2)}</span>`;
+                    let badgeOfertaCard = '';
+
+                    if (descVal > 0) {
+                        badgeOfertaCard = `<span class="absolute top-3 right-3 bg-red-500 text-slate-950 font-black px-2.5 py-1 rounded-xl text-[10px] shadow-lg uppercase tracking-wider z-10">🔥 -${descVal}% OFF</span>`;
+                        precioHtml = `
+                            <div class="flex items-center gap-2">
+                                <span class="text-emerald-400 font-black text-2xl">$${precioFinal.toFixed(2)}</span>
+                                <span class="text-slate-500 text-xs line-through">$${precioOriginal.toFixed(2)}</span>
+                            </div>
+                        `;
+                    }
+
+                    const imagenHtml = prod.imagenUrl 
+                        ? `<div onclick='abrirZoomImagen("${prod.imagenUrl}", "${nombreMayus.replace(/'/g, "\\'")}")' class="w-full h-44 bg-slate-950 rounded-xl overflow-hidden mb-3 border border-slate-800 flex items-center justify-center p-1 relative group cursor-pointer">
+                               <img src="${prod.imagenUrl}" class="max-w-full max-h-full object-contain transition-transform duration-300 group-hover:scale-110">
+                               <div class="absolute inset-0 bg-slate-950/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-amber-400 text-xs font-bold gap-1 shadow-inner">
+                                   <span class="text-2xl animate-pulse">🔍</span>
+                                   <span>Click para ampliar</span>
+                               </div>
+                           </div>` 
+                        : `<div class="w-full h-24 bg-slate-950 rounded-xl flex items-center justify-center text-slate-600 text-3xl mb-3 border border-slate-800">📷</div>`;
+
+                    const telWspLimpio = prod.telefonoWsp ? prod.telefonoWsp.replace(/\D/g,'') : '';
+                    const btnWspTienda = telWspLimpio ? `
+                        <a href="https://wa.me/${telWspLimpio}?text=${encodeURIComponent(`¡Hola! 👋 Vi su repuesto *${nombreMayus}* en *TurespuestoYa* y me interesa.`)}" target="_blank" class="bg-emerald-600/20 hover:bg-emerald-600 text-emerald-400 hover:text-white font-bold px-3 py-2 rounded-xl text-xs transition border border-emerald-500/30 flex items-center gap-1">
+                            💬 WhatsApp
+                        </a>
+                    ` : '';
+
+                    grid.innerHTML += `
+                        <div class="bg-slate-900 border ${tieneAdvertencia ? 'border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.3)]' : descVal > 0 ? 'border-red-500/50 shadow-red-500/5' : 'border-slate-800'} p-5 rounded-2xl flex flex-col justify-between gap-4 shadow-xl relative">
+                            ${badgeOfertaCard}
+                            <div>
+                                ${imagenHtml}
+                                
+                                <div class="flex justify-between items-center gap-2 mb-2">
+                                    <span class="text-[10px] uppercase font-bold text-amber-500 bg-amber-500/10 px-2.5 py-1 rounded-lg border border-amber-500/20">${prod.categoria}</span>
+                                    <span onclick='filtrarPorTienda("${prod.uidTienda}", "${prod.nombreTienda.replace(/'/g, "\\'")}")' class="text-xs font-black text-amber-400 bg-slate-950 hover:bg-slate-900 px-3 py-1.5 rounded-xl border border-amber-500/30 truncate shadow-md cursor-pointer transition flex items-center gap-1" title="Ver catálogo de esta tienda">
+                                        🏢 ${prod.nombreTienda} ${insigniaVerificado}
+                                    </span>
+                                </div>
+
+                                <h3 class="text-base sm:text-lg font-black text-white tracking-wide leading-snug mt-1 mb-2 uppercase">${nombreMayus}</h3>
+                                
+                                ${alertaAdvertenciaCard}
+                                ${alertaStockBajo}
+                                
+                                <div class="flex items-center gap-1.5 flex-wrap mt-2">
+                                    ${tagsHtml}
+                                </div>
+                            </div>
+
+                            <div class="flex flex-col gap-3 pt-3 border-t border-slate-800">
+                                <div class="flex justify-between items-end mb-1">
+                                    <div>
+                                        <span class="text-[10px] text-slate-400 block font-bold uppercase tracking-wider">Precio</span>
+                                        ${precioHtml}
+                                    </div>
+                                    <div class="text-right">
+                                        <span class="text-xs font-bold text-slate-300 bg-slate-950 px-2.5 py-1 rounded-lg border border-slate-800 block">Stock: ${stock}</span>
+                                    </div>
+                                </div>
+                                <div class="bg-slate-950 border border-slate-800 p-2.5 rounded-xl flex items-center justify-between text-xs">
+                                    <span class="text-amber-400 font-bold truncate">📍 ${prod.ciudadTienda}</span>
+                                    <span class="text-slate-400 truncate max-w-[60%]">Dir: ${prod.direccionFisica}</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    ${btnWspTienda}
+                                    <button onclick='abrirModalPedido(${JSON.stringify(prod)})' class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-black shadow-lg shadow-amber-500/20 cursor-pointer py-2.5 px-3 rounded-xl text-xs transition text-center flex-1">
+                                        Solicitar Delivery 🚚
+                                    </button>
+                                </div>
+                                <div class="flex justify-end pt-1">
+                                    <button onclick='abrirModalReporte(${JSON.stringify(prod)})' class="text-[11px] text-red-400 hover:text-red-300 font-bold flex items-center gap-1 cursor-pointer transition">
+                                        🚨 Reportar publicación
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+            } else {
+                grid.innerHTML = `<p class="text-slate-500 text-xs italic col-span-full text-center py-10">No se encontraron repuestos con los filtros seleccionados.</p>`;
+            }
+        }
+
+        window.filtrarPorTienda = function(uidTienda, nombreTienda) {
+            tiendaFiltroUid = uidTienda;
+            document.getElementById('labelTiendaActiva').innerText = nombreTienda;
+            document.getElementById('bannerFiltroTienda').classList.remove('hidden');
+            renderizarCatalogo();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+
+        window.resetearFiltroTienda = function() {
+            tiendaFiltroUid = "Todas";
+            document.getElementById('bannerFiltroTienda').classList.add('hidden');
+            renderizarCatalogo();
+        };
+
+        window.abrirZoomImagen = function(url, nombre) {
+            document.getElementById('zoomImagenSrc').src = url;
+            document.getElementById('zoomTituloProd').innerText = nombre;
+            const modal = document.getElementById('modalZoomImagen');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        };
+
+        window.cerrarZoomImagen = function() {
+            const modal = document.getElementById('modalZoomImagen');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        };
+
+        window.abrirModalReporte = function(prod) {
+            productoAReportar = prod;
+            const nombreMayus = prod.nombre ? prod.nombre.toUpperCase() : '';
+            document.getElementById('modalReporteTituloProd').innerText = nombreMayus;
+            document.getElementById('repMotivoDetalle').value = "";
+            
+            const modal = document.getElementById('modalReporte');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        };
+
+        window.cerrarModalReporte = function() {
+            const modal = document.getElementById('modalReporte');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        };
+
+        document.getElementById('btnEnviarReporte').addEventListener('click', () => {
+            const motivoPredefinido = document.getElementById('selectMotivoPredefinido').value;
+            const motivoExtra = document.getElementById('repMotivoDetalle').value.trim();
+            const motivoFinal = motivoExtra ? `${motivoPredefinido}: ${motivoExtra}` : motivoPredefinido;
+
+            if (!productoAReportar) return;
+
+            const datosReporte = {
+                repuestoId: productoAReportar.id,
+                nombreRepuesto: productoAReportar.nombre,
+                tiendaUid: productoAReportar.uidTienda,
+                nombreTienda: productoAReportar.nombreTienda,
+                motivo: motivoFinal,
+                fecha: new Date().toLocaleString()
+            };
+
+            // Guardar reporte en la ruta general para el administrador y dentro del producto para advertencia visual instantánea
+            const refReporteGlobal = push(ref(db, 'reportesAdmin'));
+            const promesaGlobal = push(ref(db, `inventarios/${productoAReportar.uidTienda}/${productoAReportar.id}/reportes`), {
+                motivo: motivoFinal,
+                fecha: new Date().toLocaleString()
+            });
+
+            push(ref(db, 'reportesAdmin'), datosReporte)
+                .then(() => promesaGlobal)
+                .then(() => {
+                    alert("¡Reporte enviado exitosamente al administrador! La publicación mostrará una advertencia.");
+                    cerrarModalReporte();
+                })
+                .catch(e => alert("Error al enviar el reporte: " + e.message));
+        });
+
+        document.getElementById('inputBuscar').addEventListener('input', renderizarCatalogo);
+
+        const modalFiltroCiudad = document.getElementById('modalFiltroCiudad');
+        document.getElementById('btnAbrirModalCiudad').addEventListener('click', () => {
+            modalFiltroCiudad.classList.remove('hidden');
+            modalFiltroCiudad.classList.add('flex');
+        });
+
+        window.cerrarModalCiudad = function() {
+            modalFiltroCiudad.classList.add('hidden');
+            modalFiltroCiudad.classList.remove('flex');
+        };
+
+        document.querySelectorAll('.opcion-ciudad').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.opcion-ciudad').forEach(b => {
+                    b.className = "opcion-ciudad text-left bg-slate-950 hover:bg-slate-800 text-slate-200 font-bold px-4 py-3 rounded-xl text-xs transition border border-slate-800 cursor-pointer";
+                });
+                e.currentTarget.className = "opcion-ciudad text-left bg-amber-500 text-slate-950 font-bold px-4 py-3 rounded-xl text-xs transition cursor-pointer";
+                
+                ciudadSeleccionada = e.currentTarget.getAttribute('data-ciudad');
+                document.getElementById('labelCiudadActual').innerText = ciudadSeleccionada;
+                
+                cerrarModalCiudad();
+                renderizarCatalogo();
+            });
+        });
+
+        document.querySelectorAll('.filtro-cat').forEach(card => {
+            card.addEventListener('click', (e) => {
+                document.querySelectorAll('.filtro-cat').forEach(c => {
+                    c.className = "filtro-cat group bg-slate-900 hover:bg-slate-800 text-slate-200 p-3.5 rounded-2xl border border-slate-800 hover:border-amber-500/50 cursor-pointer transition-all duration-300 hover:scale-[1.03] flex items-center gap-3 shadow-md";
+                });
+                
+                const targetCard = e.currentTarget;
+                targetCard.className = "filtro-cat group bg-amber-500 text-slate-950 p-3.5 rounded-2xl border border-amber-400 cursor-pointer transition-all duration-300 hover:scale-[1.03] flex items-center gap-3 shadow-lg cat-card-active";
+                
+                categoriaSeleccionada = targetCard.getAttribute('data-cat');
+                renderizarCatalogo();
+            });
+        });
+
+        window.abrirModalPedido = function(prod) {
+            productoSeleccionado = prod;
+            const nombreMayus = prod.nombre ? prod.nombre.toUpperCase() : '';
+            document.getElementById('modalTituloProd').innerText = nombreMayus;
+            document.getElementById('modalCatTag').innerText = "Solicitar Delivery";
+            
+            const descVal = parseInt(prod.descuento) || 0;
+            const precioOrig = parseFloat(prod.precio) || 0;
+            const precioFinal = descVal > 0 ? precioOrig * (1 - descVal / 100) : precioOrig;
+
+            if (descVal > 0) {
+                document.getElementById('modalInfoDescuento').classList.remove('hidden');
+                document.getElementById('modalValDesc').innerText = descVal;
+                document.getElementById('modalPrecioOrig').innerText = precioOrig.toFixed(2);
+                document.getElementById('modalPrecioProd').innerText = `$${precioFinal.toFixed(2)}`;
+            } else {
+                document.getElementById('modalInfoDescuento').classList.add('hidden');
+                document.getElementById('modalPrecioProd').innerText = `$${precioOrig.toFixed(2)}`;
+            }
+
+            document.getElementById('modalPedido').classList.remove('hidden');
+            document.getElementById('modalPedido').classList.add('flex');
+        };
+
+        window.cerrarModal = function() {
+            document.getElementById('modalPedido').classList.add('hidden');
+            document.getElementById('modalPedido').classList.remove('flex');
+        };
+
+        document.getElementById('btnEnviarPedido').addEventListener('click', () => {
+            const cliente = document.getElementById('pedCliente').value.trim();
+            const telefono = document.getElementById('pedTelefono').value.trim();
+            const ciudad = document.getElementById('pedCiudad').value.trim();
+            const direccion = document.getElementById('pedDireccion').value.trim();
+
+            if (!cliente || !telefono || !ciudad || !direccion) {
+                return alert("Por favor completa todos los datos para solicitar el delivery.");
+            }
+
+            const descVal = parseInt(productoSeleccionado.descuento) || 0;
+            const precioOrig = parseFloat(productoSeleccionado.precio) || 0;
+            const precioFinal = descVal > 0 ? precioOrig * (1 - descVal / 100) : precioOrig;
+            const nombreMayus = productoSeleccionado.nombre ? productoSeleccionado.nombre.toUpperCase() : '';
+
+            const datosPedido = {
+                repuesto: nombreMayus,
+                precio: precioFinal.toFixed(2),
+                precioOriginal: descVal > 0 ? precioOrig.toFixed(2) : null,
+                descuento: descVal,
+                prodId: productoSeleccionado.id,
+                cliente: cliente,
+                telefono: telefono,
+                ciudad: ciudad,
+                direccion: direccion,
+                fecha: new Date().toLocaleString()
+            };
+
+            push(ref(db, `pedidos/${productoSeleccionado.uidTienda}`), datosPedido)
+                .then(() => {
+                    alert(`¡Solicitud de delivery enviada con éxito a ${productoSeleccionado.nombreTienda}!\nAbriendo WhatsApp para coordinar...`);
+                    cerrarModal();
+
+                    const telWspLimpio = productoSeleccionado.telefonoWsp ? productoSeleccionado.telefonoWsp.replace(/\D/g,'') : '';
+                    const textoWsp = `🛒 *SOLICITUD DE DELIVERY - TurespuestoYa*\n\n` +
+                        `📦 Repuesto: *${nombreMayus}*\n` +
+                        `💵 Precio: *$${precioFinal.toFixed(2)}*\n\n` +
+                        `👤 Cliente: *${cliente}*\n` +
+                        `📞 Teléfono: *${telefono}*\n` +
+                        `📍 Ciudad: *${ciudad}*\n` +
+                        `🏠 Dirección: *${direccion}*`;
+
+                    if (telWspLimpio) {
+                        window.open(`https://wa.me/${telWspLimpio}?text=${encodeURIComponent(textoWsp)}`, '_blank');
+                    } else {
+                        alert("Nota: Esta tienda no tiene registrado un número de WhatsApp, pero tu pedido fue guardado exitosamente en el panel.");
+                    }
+
+                    document.getElementById('pedCliente').value = "";
+                    document.getElementById('pedTelefono').value = "";
+                    document.getElementById('pedCiudad').value = "";
+                    document.getElementById('pedDireccion').value = "";
+                })
+                .catch(e => alert("Error al enviar la solicitud: " + e.message));
+        });
+    </script>
+</body>
+</html>

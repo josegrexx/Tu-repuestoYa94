@@ -1,0 +1,897 @@
+<!-- =============================================================
+     ARCHIVO: panel.html (Panel de Tienda - Versión 4.7 con Menú Unificado)
+     ============================================================= -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Tienda v4.7 - TurespuestoYa</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans">
+
+    <!-- Header del Panel -->
+    <header class="bg-slate-900 border-b border-slate-800 p-4 sticky top-0 z-50 shadow-md">
+        <div class="max-w-7xl mx-auto flex flex-wrap justify-between items-center gap-4">
+            <div class="flex items-center gap-2">
+                <span class="text-2xl">⚡</span>
+                <h1 class="text-xl font-black text-amber-500 tracking-wide uppercase">Panel de Tienda <span class="text-xs bg-amber-500/10 text-amber-400 px-2 py-0.5 rounded-full border border-amber-500/30">v4.7</span></h1>
+            </div>
+            
+            <div class="flex items-center gap-3 flex-wrap">
+                <!-- Botón Principal: Notificaciones con Contador -->
+                <button onclick="enfocarPedidos()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold px-3 py-1.5 rounded-xl text-xs transition border border-slate-700 cursor-pointer flex items-center gap-2 relative shadow-sm">
+                    <span>🔔 Notificaciones</span>
+                    <span id="badgeNotifHeader" class="bg-amber-500 text-slate-950 text-[10px] px-1.5 py-0.2 rounded-full font-black">0</span>
+                </button>
+
+                <!-- Menú Desplegable Unificado ("Opciones") -->
+                <div class="relative">
+                    <button onclick="toggleMenuOpciones()" class="bg-slate-800 hover:bg-slate-700 text-amber-400 font-bold px-3 py-1.5 rounded-xl text-xs transition border border-slate-700 cursor-pointer flex items-center gap-1.5 shadow-sm">
+                        <span>⚙️ Opciones ▾</span>
+                    </button>
+                    
+                    <!-- Contenido del Menú Desplegable -->
+                    <div id="menuDesplegableOpciones" class="absolute right-0 mt-2 w-48 bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl hidden flex-col py-1.5 z-50">
+                        <button onclick="abrirModalPassword(); cerrarMenuOpciones();" class="text-left px-4 py-2 text-xs text-slate-300 hover:bg-slate-800 hover:text-amber-400 font-bold transition flex items-center gap-2 cursor-pointer">
+                            🔑 Cambiar Contraseña
+                        </button>
+                        <button id="btnToggleSonidoMenu" onclick="alternarSonido();" class="text-left px-4 py-2 text-xs text-slate-300 hover:bg-slate-800 hover:text-amber-400 font-bold transition flex items-center gap-2 cursor-pointer border-t border-slate-800/60">
+                            <span id="textoSonidoMenu">🔊 Sonido: ON</span>
+                        </button>
+                    </div>
+                </div>
+
+                <a href="index.html" class="bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold px-3 py-1.5 rounded-xl text-xs transition border border-slate-700">Ir al Catálogo 🌐</a>
+                <button id="btnCerrarSesion" class="bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-slate-950 font-bold px-3 py-1.5 rounded-xl text-xs transition border border-red-500/30 cursor-pointer">Cerrar Sesión 🚪</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Contenido Principal -->
+    <main class="max-w-7xl mx-auto p-4 flex-grow w-full mt-4 flex flex-col gap-6">
+        
+        <!-- Tarjeta de Información de la Tienda -->
+        <section class="bg-slate-900 border border-slate-800 p-4 rounded-2xl shadow-md flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-amber-500/10 border border-amber-500/30 rounded-xl flex items-center justify-center text-amber-400 text-lg font-black">
+                    🏪
+                </div>
+                <div>
+                    <h2 id="infoNombreTienda" class="text-sm font-black text-white uppercase tracking-wider">Cargando tienda...</h2>
+                    <div class="flex flex-wrap items-center gap-3 text-xs text-slate-400 mt-0.5">
+                        <span id="infoCorreoTienda">📧 Cargando correo...</span>
+                        <span>•</span>
+                        <span id="infoTelefonoTienda">📞 Cargando teléfono...</span>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-slate-950 border border-slate-800 px-3 py-2 rounded-xl text-right w-full md:w-auto">
+                <span id="infoRelojHora" class="text-xs font-black text-amber-400 block">--:--:--</span>
+                <span id="infoRelojFecha" class="text-[10px] text-slate-400 uppercase">Cargando fecha...</span>
+            </div>
+        </section>
+
+        <!-- Contenedor Dinámico para Alertas de la Administración -->
+        <div id="contenedorAlertaAdmin" class="w-full hidden"></div>
+
+        <div class="flex flex-col lg:flex-row gap-6">
+            <!-- Columna Izquierda: Formulario con Mini Ventana de Previsualización -->
+            <section id="seccionFormulario" class="w-full lg:w-1/3 bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl h-fit sticky top-24">
+                <h2 id="tituloFormRepuesto" class="text-base font-black text-white mb-4 flex items-center gap-2 border-b border-slate-800 pb-3">
+                    ➕ Agregar Nuevo Repuesto
+                </h2>
+
+                <form id="formRepuesto" class="flex flex-col gap-3">
+                    <input type="hidden" id="editIdProd" value="">
+
+                    <div>
+                        <label class="text-xs text-slate-400 font-bold mb-1 block">Nombre del Repuesto</label>
+                        <input type="text" id="inputNombre" placeholder="Ej. Pastillas de freno" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-slate-100 text-xs focus:border-amber-500 focus:outline-none">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="text-xs text-slate-400 font-bold mb-1 block">Categoría</label>
+                            <select id="inputCategoria" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-slate-100 text-xs focus:border-amber-500 focus:outline-none cursor-pointer">
+                                <option value="Motor">Motor</option>
+                                <option value="Frenos">Frenos</option>
+                                <option value="Suspensión">Suspensión</option>
+                                <option value="Eléctrico">Eléctrico</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-xs text-slate-400 font-bold mb-1 block">Stock Disponible</label>
+                            <input type="number" id="inputStock" placeholder="Ej. 5" min="1" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-slate-100 text-xs focus:border-amber-500 focus:outline-none">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="text-xs text-slate-400 font-bold mb-1 block">Precio ($ USD)</label>
+                            <input type="number" step="0.01" id="inputPrecio" placeholder="Ej. 45.00" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-slate-100 text-xs focus:border-amber-500 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="text-xs text-slate-400 font-bold mb-1 block">Descuento % (Opcional)</label>
+                            <input type="number" id="inputDescuento" placeholder="Ej. 15" min="0" max="100" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-slate-100 text-xs focus:border-amber-500 focus:outline-none">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="text-xs text-slate-400 font-bold mb-1 block">Foto del Repuesto (Archivo)</label>
+                        <input type="file" id="inputArchivoFoto" accept="image/*" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-300 text-xs focus:border-amber-500 focus:outline-none file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-amber-500 file:text-slate-950 hover:file:bg-amber-400 cursor-pointer mb-3">
+                        
+                        <div class="bg-slate-950 border border-slate-800 rounded-xl p-3 flex flex-col items-center gap-2">
+                            <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Mini Ventana de Previsualización</span>
+                            <div id="contenedorPreview" class="w-full h-36 bg-slate-900 rounded-lg border border-slate-800 flex items-center justify-center overflow-hidden relative p-1">
+                                <span id="textoSinPreview" class="text-slate-600 text-xs italic">Sin imagen seleccionada</span>
+                                <img id="imgPreview" src="" class="max-w-full max-h-full object-contain hidden">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col gap-2 mt-1">
+                        <label class="flex items-center gap-2 text-xs text-slate-300 cursor-pointer">
+                            <input type="checkbox" id="checkDelivery" class="rounded bg-slate-950 border-slate-800 text-amber-500 focus:ring-0 w-4 h-4">
+                            <span>Ofrece servicio de Delivery 🚚</span>
+                        </label>
+                        <label class="flex items-center gap-2 text-xs text-slate-300 cursor-pointer">
+                            <input type="checkbox" id="checkRetiro" class="rounded bg-slate-950 border-slate-800 text-amber-500 focus:ring-0 w-4 h-4">
+                            <span>Disponible para Retiro en Tienda 🏢</span>
+                        </label>
+                    </div>
+
+                    <div class="flex gap-2 mt-2">
+                        <button type="submit" id="btnGuardarProd" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-3 rounded-xl transition text-xs shadow-lg shadow-amber-500/20 cursor-pointer flex-1">
+                            Guardar Repuesto 💾
+                        </button>
+                        <button type="button" id="btnCancelarEdicion" onclick="cancelarEdicion()" class="hidden bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 px-4 rounded-xl transition text-xs cursor-pointer">
+                            Cancelar
+                        </button>
+                    </div>
+                </form>
+            </section>
+
+            <!-- Columna Derecha: Dashboards -->
+            <section class="w-full lg:w-2/3 flex flex-col gap-6">
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div id="cardPedidos" class="bg-slate-900 border border-slate-800 p-4 rounded-2xl shadow-md flex flex-col gap-3 transition">
+                        <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+                            <h3 class="text-sm font-black text-blue-400 uppercase flex items-center gap-2">🚚 Delivery Pendientes</h3>
+                            <span id="badgePedidos" class="bg-blue-500 text-slate-950 text-[10px] px-2 py-0.5 rounded-full font-black shadow-md">0</span>
+                        </div>
+                        <div id="gridPedidos" class="flex flex-col gap-2 max-h-72 overflow-y-auto pr-1">
+                            <p class="text-slate-500 text-xs italic">Cargando pedidos...</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl shadow-md flex flex-col gap-3">
+                        <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+                            <h3 class="text-sm font-black text-emerald-400 uppercase flex items-center gap-2">📊 Resumen de Ventas (Activos)</h3>
+                        </div>
+                        <div id="gridResumenVentasRepuesto" class="flex flex-col gap-2 max-h-72 overflow-y-auto pr-1">
+                            <p class="text-slate-500 text-xs italic">Calculando ventas...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl shadow-md">
+                    <div class="flex justify-between items-center border-b border-slate-800 pb-3 mb-3">
+                        <h3 class="text-sm font-black text-white uppercase tracking-wider">Historial Global de Transacciones</h3>
+                    </div>
+                    <div id="gridVentas" class="flex flex-col gap-2 max-h-48 overflow-y-auto pr-1">
+                        <p class="text-slate-500 text-xs italic text-center py-4">Aún no hay transacciones registradas.</p>
+                    </div>
+                </div>
+
+                <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl shadow-md">
+                    <div class="flex justify-between items-center border-b border-slate-800 pb-3 mb-4">
+                        <h3 class="text-sm font-black text-white uppercase tracking-wider">Mi Inventario Publicado</h3>
+                        <span id="contadorMisRepuestos" class="bg-amber-500/10 text-amber-400 font-bold px-3 py-1 rounded-xl text-xs border border-amber-500/20">0 repuestos</span>
+                    </div>
+
+                    <div id="gridMisRepuestos" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <p class="text-slate-500 text-xs italic col-span-full text-center py-10">Cargando tus repuestos...</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Modal Venta Física -->
+    <div id="modalVentaFisica" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden justify-center items-center p-4 z-50">
+        <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl max-w-md w-full flex flex-col gap-4 shadow-2xl">
+            <div class="flex justify-between items-start">
+                <div>
+                    <span class="text-[10px] uppercase font-bold text-amber-500 tracking-wider">Punto de Venta Local</span>
+                    <h3 id="modalVentaTituloProd" class="text-lg font-black text-white uppercase">Registrar Venta Presencial</h3>
+                </div>
+                <button onclick="cerrarModalVenta()" class="text-slate-400 hover:text-white text-lg font-bold px-2 cursor-pointer">✕</button>
+            </div>
+
+            <div class="bg-slate-950 border border-slate-800 p-3 rounded-xl flex justify-between items-center text-xs">
+                <span class="text-slate-400 font-bold">Precio Unitario:</span>
+                <span id="modalVentaPrecio" class="text-emerald-400 font-black text-base">$0.00</span>
+            </div>
+
+            <div class="flex flex-col gap-3">
+                <div>
+                    <label class="text-xs text-slate-400 font-bold mb-1 block">Nombre del Comprador</label>
+                    <input type="text" id="ventaComprador" placeholder="Ej. Cliente mostrador" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-slate-100 text-xs focus:border-amber-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="text-xs text-slate-400 font-bold mb-1 block">Teléfono / Contacto</label>
+                    <input type="text" id="ventaTelefono" placeholder="Ej. Opcional" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-slate-100 text-xs focus:border-amber-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="text-xs text-slate-400 font-bold mb-1 block">Notas (Opcional)</label>
+                    <textarea id="ventaNotas" rows="2" placeholder="Ej. Entregado en tienda..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-slate-100 text-xs focus:border-amber-500 focus:outline-none resize-none"></textarea>
+                </div>
+            </div>
+
+            <button id="btnConfirmarVentaFisica" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black py-3 rounded-xl transition text-xs shadow-lg shadow-emerald-500/20 cursor-pointer">
+                Confirmar Venta y Descontar Stock 🛒
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal Cambiar Contraseña -->
+    <div id="modalCambiarPassword" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden justify-center items-center p-4 z-50">
+        <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl max-w-md w-full flex flex-col gap-4 shadow-2xl">
+            <div class="flex justify-between items-start">
+                <div>
+                    <span class="text-[10px] uppercase font-bold text-amber-500 tracking-wider">Seguridad de la Cuenta</span>
+                    <h3 class="text-lg font-black text-white uppercase">Cambiar Contraseña</h3>
+                </div>
+                <button onclick="cerrarModalPassword()" class="text-slate-400 hover:text-white text-lg font-bold px-2 cursor-pointer">✕</button>
+            </div>
+
+            <div class="flex flex-col gap-3">
+                <div>
+                    <label class="text-xs text-slate-400 font-bold mb-1 block">Nueva Contraseña</label>
+                    <input type="password" id="inputNuevaPassword" placeholder="Mínimo 6 caracteres" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-slate-100 text-xs focus:border-amber-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="text-xs text-slate-400 font-bold mb-1 block">Confirmar Nueva Contraseña</label>
+                    <input type="password" id="inputConfirmarPassword" placeholder="Repite la contraseña" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-slate-100 text-xs focus:border-amber-500 focus:outline-none">
+                </div>
+            </div>
+
+            <button id="btnEjecutarCambioPassword" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-3 rounded-xl transition text-xs shadow-lg shadow-amber-500/20 cursor-pointer">
+                Actualizar Contraseña 🔑
+            </button>
+        </div>
+    </div>
+
+    <!-- Script del Panel -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
+        import { getDatabase, ref, onValue, push, update, remove } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-database.js";
+        import { getAuth, onAuthStateChanged, signOut, updatePassword } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyB4xzcn6XKdViHsdGnGJukyqcdAOKWtujg",
+            authDomain: "turepuestoya.firebaseapp.com",
+            projectId: "turepuestoya",
+            databaseURL: "https://turepuestoya-default-rtdb.firebaseio.com",
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const auth = getAuth(app);
+
+        let uidTiendaActual = null;
+        let imagenBase64Actual = "";
+        let productoVentaActual = null;
+        let ventasGlobalesMemoria = {};
+        let inventarioActivoMemoria = {};
+        let sonidoActivado = true;
+
+        // Reloj en tiempo real
+        setInterval(() => {
+            const ahora = new Date();
+            document.getElementById('infoRelojHora').innerText = ahora.toLocaleTimeString();
+            document.getElementById('infoRelojFecha').innerText = ahora.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        }, 1000);
+
+        // Control del Menú Desplegable de Opciones
+        window.toggleMenuOpciones = function() {
+            const menu = document.getElementById('menuDesplegableOpciones');
+            if (menu.classList.contains('hidden')) {
+                menu.classList.remove('hidden');
+                menu.classList.add('flex');
+            } else {
+                menu.classList.add('hidden');
+                menu.classList.remove('flex');
+            }
+        };
+
+        window.cerrarMenuOpciones = function() {
+            const menu = document.getElementById('menuDesplegableOpciones');
+            menu.classList.add('hidden');
+            menu.classList.remove('flex');
+        };
+
+        // Cerrar menú al hacer clic fuera
+        window.addEventListener('click', function(e) {
+            const menu = document.getElementById('menuDesplegableOpciones');
+            const botonOpciones = e.target.closest('button');
+            if (!e.target.closest('#menuDesplegableOpciones') && (!botonOpciones || !botonOpciones.getAttribute('onclick')?.includes('toggleMenuOpciones'))) {
+                menu.classList.add('hidden');
+                menu.classList.remove('flex');
+            }
+        });
+
+        window.alternarSonido = function() {
+            sonidoActivado = !sonidoActivado;
+            document.getElementById('textoSonidoMenu').innerText = sonidoActivado ? '🔊 Sonido: ON' : '🔇 Sonido: OFF';
+            if (sonidoActivado) reproducirSonidoAlerta();
+        };
+
+        window.enfocarPedidos = function() {
+            const card = document.getElementById('cardPedidos');
+            card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            card.classList.add('border-amber-500', 'ring-2', 'ring-amber-500/50');
+            setTimeout(() => {
+                card.classList.remove('border-amber-500', 'ring-2', 'ring-amber-500/50');
+            }, 2000);
+        };
+
+        window.abrirModalPassword = function() {
+            document.getElementById('inputNuevaPassword').value = "";
+            document.getElementById('inputConfirmarPassword').value = "";
+            const modal = document.getElementById('modalCambiarPassword');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        };
+
+        window.cerrarModalPassword = function() {
+            const modal = document.getElementById('modalCambiarPassword');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        };
+
+        document.getElementById('btnEjecutarCambioPassword').addEventListener('click', () => {
+            const nuevaPass = document.getElementById('inputNuevaPassword').value.trim();
+            const confirmarPass = document.getElementById('inputConfirmarPassword').value.trim();
+
+            if (!nuevaPass || !confirmarPass) {
+                return alert("Por favor llena ambos campos de contraseña.");
+            }
+            if (nuevaPass.length < 6) {
+                return alert("La contraseña debe tener al menos 6 caracteres.");
+            }
+            if (nuevaPass !== confirmarPass) {
+                return alert("Las contraseñas no coinciden.");
+            }
+
+            const user = auth.currentUser;
+            if (user) {
+                updatePassword(user, nuevaPass).then(() => {
+                    alert("¡Contraseña actualizada con éxito!");
+                    cerrarModalPassword();
+                }).catch((error) => {
+                    alert("Error al actualizar contraseña: " + error.message);
+                });
+            } else {
+                alert("No hay una sesión activa.");
+            }
+        });
+
+        function reproducirSonidoAlerta() {
+            if (!sonidoActivado) return;
+            try {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                const ctx = new AudioContext();
+                const notes = [440, 554.37, 659.25, 880];
+                let startTime = ctx.currentTime;
+                
+                notes.forEach((freq, i) => {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(freq, startTime + (i * 0.1));
+                    gain.gain.setValueAtTime(0, startTime + (i * 0.1));
+                    gain.gain.linearRampToValueAtTime(0.3, startTime + (i * 0.1) + 0.05);
+                    gain.gain.exponentialRampToValueAtTime(0.01, startTime + (i * 0.1) + 0.3);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(startTime + (i * 0.1));
+                    osc.stop(startTime + (i * 0.1) + 0.3);
+                });
+            } catch (error) {
+                console.log("Audio API bloqueada.");
+            }
+        }
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                uidTiendaActual = user.uid;
+                sincronizarDatosTienda(uidTiendaActual);
+            } else {
+                window.location.href = "login.html";
+            }
+        });
+
+        document.getElementById('btnCerrarSesion').addEventListener('click', () => {
+            signOut(auth).then(() => window.location.href = "login.html");
+        });
+
+        document.getElementById('inputArchivoFoto').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            const imgPreview = document.getElementById('imgPreview');
+            const textoSinPreview = document.getElementById('textoSinPreview');
+
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(uploadEvent) {
+                    imagenBase64Actual = uploadEvent.target.result;
+                    imgPreview.src = imagenBase64Actual;
+                    imgPreview.classList.remove('hidden');
+                    textoSinPreview.classList.add('hidden');
+                };
+                reader.readAsDataURL(file);
+            } else {
+                imgPreview.src = "";
+                imgPreview.classList.add('hidden');
+                textoSinPreview.classList.remove('hidden');
+                imagenBase64Actual = "";
+            }
+        });
+
+        let pedidosInicializados = false;
+        let totalPedidosPrevios = 0;
+
+        function sincronizarDatosTienda(uid) {
+            onValue(ref(db, `tiendas/${uid}`), (snapshot) => {
+                const tiendaData = snapshot.val() || {};
+                document.getElementById('infoNombreTienda').innerText = tiendaData.nombreTienda || 'Mi Tienda de Repuestos';
+                document.getElementById('infoCorreoTienda').innerText = `📧 ${tiendaData.email || 'No registrado'}`;
+                document.getElementById('infoTelefonoTienda').innerText = `📞 ${tiendaData.telefonoWsp || 'No especificado'}`;
+            });
+
+            onValue(ref(db, `notificaciones_tienda/${uid}`), (snapshot) => {
+                const notif = snapshot.val();
+                const contenedorAlerta = document.getElementById('contenedorAlertaAdmin');
+
+                if (notif) {
+                    let estiloBorde = "bg-amber-500/10 border-amber-500/30 text-amber-400";
+                    let iconoAlerta = "⚠️";
+
+                    if (notif.estado === 'blocked') {
+                        estiloBorde = "bg-red-500/10 border-red-500/30 text-red-400 animate-pulse";
+                        iconoAlerta = "🚫";
+                    } else if (notif.estado === 'active') {
+                        estiloBorde = "bg-emerald-500/10 border-emerald-500/30 text-emerald-400";
+                        iconoAlerta = "✅";
+                    }
+
+                    contenedorAlerta.className = `w-full border p-4 rounded-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 shadow-xl ${estiloBorde}`;
+                    contenedorAlerta.innerHTML = `
+                        <div class="flex items-center gap-3">
+                            <span class="text-2xl">${iconoAlerta}</span>
+                            <div>
+                                <h4 class="text-xs font-black uppercase tracking-wider">Aviso de la Administración</h4>
+                                <p class="text-xs mt-0.5 text-slate-200">${notif.mensaje}</p>
+                            </div>
+                        </div>
+                        <span class="text-[10px] text-slate-400 whitespace-nowrap bg-slate-950/50 px-2.5 py-1 rounded-lg border border-slate-800">${notif.fecha}</span>
+                    `;
+                    contenedorAlerta.classList.remove('hidden');
+                } else {
+                    contenedorAlerta.classList.add('hidden');
+                }
+            });
+
+            onValue(ref(db, `inventarios/${uid}`), (snapshot) => {
+                inventarioActivoMemoria = snapshot.val() || {};
+                renderizarInventarioYResumen();
+            });
+
+            onValue(ref(db, `ventas/${uid}`), (snapshot) => {
+                ventasGlobalesMemoria = snapshot.val() || {};
+                
+                const gridVentas = document.getElementById('gridVentas');
+                gridVentas.innerHTML = "";
+                const ventasArr = Object.entries(ventasGlobalesMemoria).map(([id, v]) => ({ id, ...v }));
+                ventasArr.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+
+                if (ventasArr.length > 0) {
+                    ventasArr.forEach(v => {
+                        gridVentas.innerHTML += `
+                            <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800 flex justify-between items-center gap-2">
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex items-center gap-2 mb-0.5">
+                                        <span class="text-emerald-400 font-black text-xs">$${v.precio}</span>
+                                        <span class="text-white text-xs font-bold truncate uppercase">${v.repuesto}</span>
+                                    </div>
+                                    <div class="text-[10px] text-slate-400 truncate">👤 ${v.comprador} | ${v.fecha}</div>
+                                </div>
+                                <span class="bg-emerald-500/10 text-emerald-400 text-[9px] px-1.5 py-0.5 rounded font-bold border border-emerald-500/20">${v.tipo}</span>
+                            </div>
+                        `;
+                    });
+                } else {
+                    gridVentas.innerHTML = `<p class="text-slate-500 text-xs italic text-center py-2">Aún no hay transacciones registradas.</p>`;
+                }
+
+                renderizarInventarioYResumen();
+            });
+
+            onValue(ref(db, `pedidos/${uid}`), (snapshot) => {
+                const data = snapshot.val() || {};
+                const grid = document.getElementById('gridPedidos');
+                grid.innerHTML = "";
+                const keys = Object.keys(data);
+                
+                document.getElementById('badgePedidos').innerText = keys.length;
+                document.getElementById('badgeNotifHeader').innerText = keys.length;
+
+                if (pedidosInicializados && keys.length > totalPedidosPrevios) {
+                    reproducirSonidoAlerta();
+                }
+                totalPedidosPrevios = keys.length;
+                pedidosInicializados = true;
+
+                if (keys.length > 0) {
+                    Object.entries(data).reverse().forEach(([id, ped]) => {
+                        const telLimpio = ped.telefono ? ped.telefono.replace(/\D/g, '') : '';
+                        const msgWsp = encodeURIComponent(`¡Hola ${ped.cliente}! Te escribimos de TurespuestoYa en relación a tu pedido del repuesto: *${ped.repuesto}* ($${parseFloat(ped.precio).toFixed(2)}). ¿Cómo procedemos con el delivery?`);
+                        const urlWsp = telLimpio ? `https://wa.me/${telLimpio}?text=${msgWsp}` : `#`;
+
+                        grid.innerHTML += `
+                            <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 shadow relative flex flex-col gap-2">
+                                <div class="flex justify-between items-start">
+                                    <strong class="text-white text-xs uppercase">${ped.repuesto}</strong>
+                                    <span class="text-emerald-400 font-bold">$${parseFloat(ped.precio).toFixed(2)}</span>
+                                </div>
+                                <div class="text-[10px] text-slate-300 leading-tight">
+                                    👤 <strong>${ped.cliente}</strong> <br> 📞 ${ped.telefono} <br> 📍 ${ped.direccion || ped.ciudad || 'Envío a domicilio'}
+                                </div>
+                                <div class="grid grid-cols-3 gap-1.5 pt-1">
+                                    <a href="${urlWsp}" target="_blank" class="bg-emerald-600/20 hover:bg-emerald-600 text-emerald-400 hover:text-white font-bold py-1.5 px-1 rounded-lg text-[10px] transition border border-emerald-500/30 text-center flex items-center justify-center">
+                                        💬 WhatsApp
+                                    </a>
+                                    <button onclick='procesarVentaDelivery("${id}", ${JSON.stringify(ped).replace(/'/g, "&apos;")})' class="bg-amber-500/20 hover:bg-amber-500 text-amber-400 hover:text-slate-950 font-bold py-1.5 px-1 rounded-lg text-[10px] transition border border-amber-500/30 cursor-pointer text-center">
+                                        🛒 Venta
+                                    </button>
+                                    <button onclick='omitirPedido("${id}")' class="bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white font-bold py-1.5 px-1 rounded-lg text-[10px] transition border border-red-500/30 cursor-pointer text-center">
+                                        ✕ Omitir
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    });
+                } else {
+                    grid.innerHTML = `<p class="text-slate-500 text-xs italic p-2">No hay pedidos pendientes.</p>`;
+                }
+            });
+        }
+
+        function renderizarInventarioYResumen() {
+            const gridInventario = document.getElementById('gridMisRepuestos');
+            const gridResumen = document.getElementById('gridResumenVentasRepuesto');
+            
+            gridInventario.innerHTML = "";
+            gridResumen.innerHTML = "";
+
+            const keys = Object.keys(inventarioActivoMemoria);
+            document.getElementById('contadorMisRepuestos').innerText = `${keys.length} repuestos`;
+
+            const nombresActivos = new Set();
+            Object.values(inventarioActivoMemoria).forEach(prod => {
+                if (prod.nombre) nombresActivos.add(prod.nombre.trim().toUpperCase());
+            });
+
+            const ventasArr = Object.values(ventasGlobalesMemoria);
+            const agrupadoActivos = {};
+
+            ventasArr.forEach(v => {
+                const nombreVenta = v.repuesto ? v.repuesto.trim().toUpperCase() : '';
+                if (nombresActivos.has(nombreVenta)) {
+                    if (!agrupadoActivos[nombreVenta]) {
+                        agrupadoActivos[nombreVenta] = { cantidad: 0, totalIngresos: 0 };
+                    }
+                    agrupadoActivos[nombreVenta].cantidad += 1;
+                    agrupadoActivos[nombreVenta].totalIngresos += parseFloat(v.precio || 0);
+                }
+            });
+
+            const llavesResumen = Object.keys(agrupadoActivos);
+            if (llavesResumen.length > 0) {
+                llavesResumen.forEach(nombre => {
+                    const info = agrupadoActivos[nombre];
+                    gridResumen.innerHTML += `
+                        <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800 flex justify-between items-center gap-2">
+                            <div class="flex-1 min-w-0">
+                                <h4 class="text-white text-xs font-black uppercase truncate">${nombre}</h4>
+                                <span class="text-[10px] text-slate-400">Unidades vendidas: <strong class="text-amber-400">${info.cantidad}</strong></span>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-emerald-400 font-black text-xs block">$${info.totalIngresos.toFixed(2)}</span>
+                                <span class="text-[9px] text-slate-500 uppercase">Total Recaudado</span>
+                            </div>
+                        </div>
+                    `;
+                });
+            } else {
+                gridResumen.innerHTML = `<p class="text-slate-500 text-xs italic p-2">No hay ventas registradas de los repuestos activos.</p>`;
+            }
+
+            if (keys.length > 0) {
+                Object.entries(inventarioActivoMemoria).forEach(([id, prod]) => {
+                    const nombreMayus = prod.nombre ? prod.nombre.trim().toUpperCase() : '';
+                    const descVal = parseInt(prod.descuento) || 0;
+                    const precioOriginal = parseFloat(prod.precio) || 0;
+                    const precioFinal = descVal > 0 ? precioOriginal * (1 - descVal / 100) : precioOriginal;
+                    const stockActual = parseInt(prod.stock) || 0;
+
+                    const alertaStockBajo = stockActual <= 5 
+                        ? `<div class="bg-red-500/10 border border-red-500/30 text-red-400 text-[10px] font-black px-2 py-1 rounded-lg text-center uppercase tracking-wider animate-pulse mb-2">⚠️ ¡Últimas disponibles! (${stockActual})</div>` 
+                        : '';
+
+                    const ventasDeEsteProd = ventasArr.filter(v => v.repuesto && v.repuesto.trim().toUpperCase() === nombreMayus);
+                    const unidadesVendidas = ventasDeEsteProd.length;
+                    const ingresosItem = ventasDeEsteProd.reduce((acc, v) => acc + parseFloat(v.precio || 0), 0);
+
+                    let imgCard = prod.imagenUrl 
+                        ? `<div class="w-full h-24 bg-slate-950 rounded-xl overflow-hidden mb-2 border border-slate-800 flex items-center justify-center p-1"><img src="${prod.imagenUrl}" class="max-w-full max-h-full object-contain"></div>` 
+                        : `<div class="w-full h-24 bg-slate-950 rounded-xl flex items-center justify-center text-slate-600 text-xl mb-2 border border-slate-800">📷</div>`;
+
+                    gridInventario.innerHTML += `
+                        <div class="bg-slate-900 border border-slate-800 p-3.5 rounded-2xl flex flex-col justify-between shadow-lg gap-3">
+                            <div>
+                                ${imgCard}
+                                <span class="text-[9px] uppercase font-bold text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">${prod.categoria}</span>
+                                <h4 class="text-xs font-black text-white uppercase mt-1 mb-1 truncate" title="${nombreMayus}">${nombreMayus}</h4>
+                                ${alertaStockBajo}
+                                <div class="flex items-center justify-between mb-2">
+                                    <div class="flex items-center gap-1">
+                                        <span class="text-emerald-400 font-black text-sm">$${precioFinal.toFixed(2)}</span>
+                                        ${descVal > 0 ? `<span class="text-red-400 text-[10px] font-bold">(-${descVal}%)</span>` : ''}
+                                    </div>
+                                    <span class="text-[10px] text-slate-300 bg-slate-950 px-1.5 py-0.5 rounded border border-slate-800">Stock: <strong>${stockActual}</strong></span>
+                                </div>
+                                <div class="bg-slate-950/80 border border-slate-800 p-2.5 rounded-xl text-[11px] flex flex-col gap-1">
+                                    <div class="flex justify-between text-slate-300">
+                                        <span>Unidades vendidas:</span>
+                                        <strong class="text-amber-400">${unidadesVendidas}</strong>
+                                    </div>
+                                    <div class="flex justify-between text-slate-300">
+                                        <span>Ingresos por este ítem:</span>
+                                        <strong class="text-emerald-400">$${ingresosItem.toFixed(2)}</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex flex-col gap-1.5 pt-2 border-t border-slate-800">
+                                <div class="flex gap-1.5">
+                                    <button onclick='prepararEdicion("${id}", ${JSON.stringify(prod).replace(/'/g, "&apos;")})' class="bg-slate-800 hover:bg-slate-700 text-amber-400 font-bold py-1.5 rounded-lg text-[10px] transition border border-slate-700 cursor-pointer flex-1">Editar ✏️</button>
+                                    <button onclick='eliminarRepuesto("${id}")' class="bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-slate-950 font-bold py-1.5 px-2 rounded-lg text-[10px] transition border border-red-500/30 cursor-pointer">🗑️</button>
+                                </div>
+                                <button onclick='abrirModalVentaFisica("${id}", ${JSON.stringify(prod).replace(/'/g, "&apos;")})' class="bg-emerald-600/20 hover:bg-emerald-600 text-emerald-400 hover:text-white font-bold py-2 rounded-lg text-[10px] transition border border-emerald-500/30 cursor-pointer text-center">
+                                    Registrar Venta Local 🛒
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+            } else {
+                gridInventario.innerHTML = `<p class="text-slate-500 text-xs italic col-span-full text-center py-10">No tienes repuestos publicados aún.</p>`;
+            }
+        }
+
+        window.procesarVentaDelivery = function(idPedido, ped) {
+            if (!confirm(`¿Confirmar venta por delivery del repuesto "${ped.repuesto}" a ${ped.cliente}?`)) return;
+
+            let idProdEncontrado = null;
+            let stockActualProd = 0;
+            const nombreBusqueda = ped.repuesto ? ped.repuesto.trim().toUpperCase() : '';
+
+            Object.entries(inventarioActivoMemoria).forEach(([idProd, prod]) => {
+                if (prod.nombre && prod.nombre.trim().toUpperCase() === nombreBusqueda) {
+                    idProdEncontrado = idProd;
+                    stockActualProd = parseInt(prod.stock) || 0;
+                }
+            });
+
+            const datosVenta = {
+                repuesto: nombreBusqueda,
+                precio: parseFloat(ped.precio).toFixed(2),
+                comprador: ped.cliente,
+                telefono: ped.telefono,
+                notas: 'Venta confirmada vía Delivery',
+                fecha: new Date().toLocaleString(),
+                timestamp: Date.now(),
+                tipo: 'Delivery'
+            };
+
+            const promesas = [
+                push(ref(db, `ventas/${uidTiendaActual}`), datosVenta),
+                remove(ref(db, `pedidos/${uidTiendaActual}/${idPedido}`))
+            ];
+
+            if (idProdEncontrado && stockActualProd > 0) {
+                promesas.push(update(ref(db, `inventarios/${uidTiendaActual}/${idProdEncontrado}`), { stock: stockActualProd - 1 }));
+            }
+
+            Promise.all(promesas)
+                .then(() => {
+                    reproducirSonidoAlerta();
+                    alert("¡Venta por delivery registrada con éxito!");
+                })
+                .catch(err => alert("Error: " + err.message));
+        };
+
+        window.omitirPedido = function(idPedido) {
+            if (confirm("¿Estás seguro de omitir este pedido?")) {
+                remove(ref(db, `pedidos/${uidTiendaActual}/${idPedido}`))
+                    .catch(err => alert("Error: " + err.message));
+            }
+        };
+
+        window.abrirModalVentaFisica = function(id, prod) {
+            productoVentaActual = { id, ...prod };
+            document.getElementById('modalVentaTituloProd').innerText = prod.nombre ? prod.nombre.toUpperCase() : '';
+            const descVal = parseInt(prod.descuento) || 0;
+            const precioOrig = parseFloat(prod.precio) || 0;
+            const precioFinal = descVal > 0 ? precioOrig * (1 - descVal / 100) : precioOrig;
+            document.getElementById('modalVentaPrecio').innerText = `$${precioFinal.toFixed(2)}`;
+            
+            document.getElementById('ventaComprador').value = "";
+            document.getElementById('ventaTelefono').value = "";
+            document.getElementById('ventaNotas').value = "";
+
+            const modal = document.getElementById('modalVentaFisica');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        };
+
+        window.cerrarModalVenta = function() {
+            const modal = document.getElementById('modalVentaFisica');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        };
+
+        document.getElementById('btnConfirmarVentaFisica').addEventListener('click', () => {
+            const comprador = document.getElementById('ventaComprador').value.trim();
+            const telefono = document.getElementById('ventaTelefono').value.trim();
+            const notas = document.getElementById('ventaNotas').value.trim();
+
+            if (!comprador || !telefono) {
+                return alert("Por favor ingresa el nombre del comprador y su teléfono.");
+            }
+
+            const stockActual = parseInt(productoVentaActual.stock) || 0;
+            if (stockActual <= 0) {
+                return alert("No hay stock disponible para este repuesto.");
+            }
+
+            const nuevoStock = stockActual - 1;
+            const descVal = parseInt(productoVentaActual.descuento) || 0;
+            const precioOrig = parseFloat(productoVentaActual.precio) || 0;
+            const precioFinal = descVal > 0 ? precioOrig * (1 - descVal / 100) : precioOrig;
+
+            const datosVenta = {
+                repuesto: productoVentaActual.nombre.toUpperCase(),
+                precio: precioFinal.toFixed(2),
+                comprador: comprador,
+                telefono: telefono,
+                notas: notas || 'Venta presencial en local',
+                fecha: new Date().toLocaleString(),
+                timestamp: Date.now(),
+                tipo: 'Presencial'
+            };
+
+            Promise.all([
+                push(ref(db, `ventas/${uidTiendaActual}`), datosVenta),
+                update(ref(db, `inventarios/${uidTiendaActual}/${productoVentaActual.id}`), { stock: nuevoStock })
+            ]).then(() => {
+                reproducirSonidoAlerta();
+                alert("¡Venta registrada con éxito y stock actualizado!");
+                cerrarModalVenta();
+            }).catch(err => alert("Error: " + err.message));
+        });
+
+        document.getElementById('formRepuesto').addEventListener('submit', (e) => {
+            e.preventDefault();
+            if (!uidTiendaActual) return;
+
+            const editId = document.getElementById('editIdProd').value;
+            const nombre = document.getElementById('inputNombre').value.trim();
+            const categoria = document.getElementById('inputCategoria').value;
+            const stock = document.getElementById('inputStock').value;
+            const precio = document.getElementById('inputPrecio').value;
+            const descuento = document.getElementById('inputDescuento').value || "0";
+            const ofreceDelivery = document.getElementById('checkDelivery').checked;
+            const retiroTienda = document.getElementById('checkRetiro').checked;
+
+            const datosRepuesto = {
+                nombre,
+                categoria,
+                stock,
+                precio,
+                descuento,
+                ofreceDelivery,
+                retiroTienda,
+                imagenUrl: imagenBase64Actual || (editId ? window._tempImgUrlAnterior || "" : "")
+            };
+
+            const dbRef = ref(db, `inventarios/${uidTiendaActual}`);
+
+            if (editId) {
+                update(ref(db, `inventarios/${uidTiendaActual}/${editId}`), datosRepuesto)
+                    .then(() => {
+                        alert("¡Repuesto actualizado con éxito!");
+                        cancelarEdicion();
+                    })
+                    .catch(err => alert("Error al actualizar: " + err.message));
+            } else {
+                push(dbRef, datosRepuesto)
+                    .then(() => {
+                        alert("¡Repuesto agregado con éxito!");
+                        cancelarEdicion();
+                    })
+                    .catch(err => alert("Error al guardar: " + err.message));
+            }
+        });
+
+        window.prepararEdicion = function(id, prod) {
+            document.getElementById('editIdProd').value = id;
+            document.getElementById('inputNombre').value = prod.nombre || '';
+            document.getElementById('inputCategoria').value = prod.categoria || 'Motor';
+            document.getElementById('inputStock').value = prod.stock || '';
+            document.getElementById('inputPrecio').value = prod.precio || '';
+            document.getElementById('inputDescuento').value = prod.descuento || '';
+            document.getElementById('checkDelivery').checked = !!prod.ofreceDelivery;
+            document.getElementById('checkRetiro').checked = !!prod.retiroTienda;
+
+            window._tempImgUrlAnterior = prod.imagenUrl || "";
+            imagenBase64Actual = prod.imagenUrl || "";
+
+            const imgPreview = document.getElementById('imgPreview');
+            const textoSinPreview = document.getElementById('textoSinPreview');
+            if (prod.imagenUrl) {
+                imgPreview.src = prod.imagenUrl;
+                imgPreview.classList.remove('hidden');
+                textoSinPreview.classList.add('hidden');
+            } else {
+                imgPreview.src = "";
+                imgPreview.classList.add('hidden');
+                textoSinPreview.classList.remove('hidden');
+            }
+
+            document.getElementById('tituloFormRepuesto').innerText = "✏️ Editar Repuesto";
+            document.getElementById('btnGuardarProd').innerText = "Actualizar Cambios 💾";
+            document.getElementById('btnCancelarEdicion').classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+
+        window.cancelarEdicion = function() {
+            document.getElementById('formRepuesto').reset();
+            document.getElementById('editIdProd').value = "";
+            window._tempImgUrlAnterior = "";
+            imagenBase64Actual = "";
+            
+            const imgPreview = document.getElementById('imgPreview');
+            const textoSinPreview = document.getElementById('textoSinPreview');
+            imgPreview.src = "";
+            imgPreview.classList.add('hidden');
+            textoSinPreview.classList.remove('hidden');
+
+            document.getElementById('tituloFormRepuesto').innerText = "➕ Agregar Nuevo Repuesto";
+            document.getElementById('btnGuardarProd').innerText = "Guardar Repuesto 💾";
+            document.getElementById('btnCancelarEdicion').classList.add('hidden');
+        };
+
+        window.eliminarRepuesto = function(id) {
+            if (confirm("¿Estás seguro de que deseas eliminar este repuesto?")) {
+                remove(ref(db, `inventarios/${uidTiendaActual}/${id}`))
+                    .then(() => alert("Repuesto eliminado."))
+                    .catch(err => alert("Error: " + err.message));
+            }
+        };
+    </script>
+</body>
+</html>

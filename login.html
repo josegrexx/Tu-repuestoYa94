@@ -1,0 +1,96 @@
+<!-- =============================================================
+     ARCHIVO: login.html (Portal de Acceso - Versión 4.0)
+     ============================================================= -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acceso de Tiendas v4.0 - TurespuestoYa</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between font-sans">
+
+    <header class="bg-slate-900 border-b border-slate-800 p-4 shadow-md">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <span class="text-2xl">⚡</span>
+                <h1 class="text-xl font-black text-amber-500 tracking-wide uppercase">TurespuestoYa <span class="text-xs bg-amber-500/10 text-amber-400 px-2 py-0.5 rounded-full border border-amber-500/30">v4.0</span></h1>
+            </div>
+            <a href="index.html" class="bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold px-3 py-1.5 rounded-xl text-xs transition border border-slate-700">Ver Catálogo 🌐</a>
+        </div>
+    </header>
+
+    <main class="max-w-md w-full mx-auto p-4 flex-grow flex items-center justify-center">
+        <div class="bg-slate-900 border border-slate-800 p-8 rounded-3xl shadow-2xl w-full flex flex-col gap-6">
+            
+            <div class="text-center">
+                <span class="text-3xl mb-2 inline-block">🔐</span>
+                <h2 class="text-xl font-black text-white uppercase tracking-wide">Portal de Tiendas</h2>
+                <p class="text-xs text-slate-400 mt-1">Ingresa tus credenciales para administrar tu inventario</p>
+            </div>
+
+            <form id="formLogin" class="flex flex-col gap-4">
+                <div>
+                    <label class="text-xs text-slate-400 font-bold mb-1.5 block">Correo Electrónico</label>
+                    <input type="email" id="loginEmail" placeholder="tu-tienda@correo.com" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-100 text-xs focus:border-amber-500 focus:outline-none transition">
+                </div>
+
+                <div>
+                    <label class="text-xs text-slate-400 font-bold mb-1.5 block">Contraseña</label>
+                    <input type="password" id="loginPassword" placeholder="••••••••" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-100 text-xs focus:border-amber-500 focus:outline-none transition">
+                </div>
+
+                <button type="submit" id="btnIngresar" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-3.5 rounded-xl transition text-xs shadow-lg shadow-amber-500/20 cursor-pointer mt-2">
+                    Iniciar Sesión 🚀
+                </button>
+            </form>
+
+            <div class="border-t border-slate-800 pt-4 text-center">
+                <p class="text-xs text-slate-400">¿No tienes una cuenta registrada?</p>
+                <a href="registro.html" class="text-amber-400 hover:text-amber-300 font-bold text-xs mt-1 inline-block transition">Registra tu tienda aquí 🏢</a>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-slate-900 border-t border-slate-800 p-4 text-center text-xs text-slate-500">
+        &copy; 2026 TurespuestoYa v4.0 - Todos los derechos reservados.
+    </footer>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyB4xzcn6XKdViHsdGnGJukyqcdAOKWtujg",
+            authDomain: "turepuestoya.firebaseapp.com",
+            projectId: "turepuestoya",
+            databaseURL: "https://turepuestoya-default-rtdb.firebaseio.com",
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        document.getElementById('formLogin').addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value.trim();
+            const btnIngresar = document.getElementById('btnIngresar');
+
+            btnIngresar.innerText = "Iniciando sesión...";
+            btnIngresar.disabled = true;
+
+            signInWithEmailAndPassword(auth, email, password)
+                .then(() => {
+                    window.location.href = "panel.html";
+                })
+                .catch(() => {
+                    alert("Error al iniciar sesión: Verifique su correo y contraseña.");
+                    btnIngresar.innerText = "Iniciar Sesión 🚀";
+                    btnIngresar.disabled = false;
+                });
+        });
+    </script>
+</body>
+</html>

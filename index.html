@@ -1,5 +1,5 @@
 <!-- =============================================================
-     ARCHIVO: index.html (Versión 4.3 - Reporte de Publicaciones añadido)
+     ARCHIVO: index.html (Versión 5.7 - Modelos Compatibles Organizados en Etiquetas)
      ============================================================= -->
 <!DOCTYPE html>
 <html lang="es">
@@ -18,15 +18,6 @@
         .animacion-rayo {
             animation: rayo-cruce 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
         }
-
-        /* Animación sutil flotante / pulso para las tarjetas de categorías */
-        @keyframes pulso-suave {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.03); }
-        }
-        .cat-card-active {
-            box-shadow: 0 0 20px rgba(245, 158, 11, 0.3);
-        }
     </style>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans">
@@ -35,15 +26,12 @@
     <header class="bg-slate-900 border-b border-slate-800 p-4 sticky top-0 z-50 shadow-md">
         <div class="max-w-7xl mx-auto flex flex-wrap justify-between items-center gap-4">
             
-            <!-- Logo con Animación de Rayo Cruzando -->
+            <!-- Logo: Tu respuesto ⚡ Ya -->
             <div class="flex items-center gap-3">
-                <span class="text-2xl animate-bounce">⚡</span>
-                <h1 class="text-xl font-black tracking-wider uppercase relative overflow-hidden px-3 py-1 rounded-xl bg-slate-950 border border-amber-500/30 shadow-inner">
-                    <!-- Texto base con degradado llamativo -->
+                <h1 class="text-xl font-black tracking-wider uppercase relative overflow-hidden px-4 py-1.5 rounded-xl bg-slate-950 border border-amber-500/30 shadow-inner flex items-center">
                     <span class="bg-gradient-to-r from-amber-400 via-yellow-200 to-amber-500 bg-clip-text text-transparent drop-shadow-[0_2px_10px_rgba(245,158,11,0.4)]">
-                        TurespuestoYa
+                        Tu respuesto ⚡ Ya
                     </span>
-                    <!-- Destello de luz / rayo cruzando por el medio -->
                     <div class="absolute inset-0 w-1/2 h-full bg-gradient-to-r from-transparent via-white/80 to-transparent animacion-rayo pointer-events-none"></div>
                 </h1>
             </div>
@@ -59,7 +47,7 @@
     <section class="max-w-7xl mx-auto px-4 mt-6 w-full flex flex-col lg:flex-row gap-3 items-center justify-between">
         <div class="w-full lg:w-1/2 relative">
             <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">🔍</span>
-            <input type="text" id="inputBuscar" placeholder="Buscar repuesto, marca o modelo..." class="w-full bg-slate-900 border border-slate-800 rounded-2xl pl-10 pr-4 py-3 text-slate-100 focus:border-amber-500 focus:outline-none text-xs">
+            <input type="text" id="inputBuscar" placeholder="Buscar repuesto, marca, modelo o código OEM..." class="w-full bg-slate-900 border border-slate-800 rounded-2xl pl-10 pr-4 py-3 text-slate-100 focus:border-amber-500 focus:outline-none text-xs">
         </div>
 
         <div class="w-full lg:w-auto">
@@ -70,67 +58,102 @@
         </div>
     </section>
 
-    <!-- Sección de Categorías con Tarjetas Animadas e Iconos -->
+    <!-- SECCIÓN: Cuadrícula de Descuentos Ultra Llamativa -->
     <section class="max-w-7xl mx-auto px-4 mt-6 w-full">
-        <div class="flex items-center justify-between mb-3">
-            <h2 class="text-xs font-black text-slate-400 uppercase tracking-wider flex items-center gap-2">
-                <span>📂</span> Categorías Principales
-            </h2>
-        </div>
-        <div id="categoriasFiltro" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        <div class="bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 border-2 border-red-500/50 p-4 sm:p-6 rounded-3xl shadow-[0_0_25px_rgba(239,68,68,0.2)] relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-32 h-32 bg-red-500/10 rounded-full blur-2xl pointer-events-none"></div>
             
-            <!-- Todas las Categorías -->
-            <div class="filtro-cat group bg-amber-500 text-slate-950 p-3.5 rounded-2xl border border-amber-400 cursor-pointer transition-all duration-300 hover:scale-[1.03] flex items-center gap-3 shadow-lg cat-card-active" data-cat="Todos">
-                <div class="w-9 h-9 rounded-xl bg-slate-950/20 flex items-center justify-center text-lg shrink-0">🌐</div>
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-slate-800 pb-3 mb-4 gap-2">
+                <h3 class="text-base sm:text-lg font-black text-amber-400 uppercase tracking-wider flex items-center gap-2">
+                    <span class="animate-bounce">🔥</span> Ofertas y Descuentos Destacados
+                </h3>
+                <span class="bg-red-500 text-slate-950 font-black text-[10px] px-3 py-1 rounded-xl uppercase tracking-wider shadow-lg animate-pulse">¡Ahorra en grande hoy!</span>
+            </div>
+
+            <div id="gridDescuentos" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <p class="text-slate-500 text-xs italic col-span-full text-center py-6">Buscando ofertas disponibles...</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 1. CATEGORÍAS PRINCIPALES (Carro y Moto Arriba) -->
+    <section class="max-w-7xl mx-auto px-4 mt-6 w-full">
+        <div id="categoriasPrincipales" class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            
+            <!-- Todos -->
+            <div class="filtro-principal group bg-amber-500 text-slate-950 p-5 rounded-2xl border-2 border-amber-400 cursor-pointer transition-all duration-300 hover:scale-[1.02] flex items-center gap-4 shadow-xl" data-principal="Todos">
+                <div class="w-12 h-12 rounded-xl bg-slate-950/20 flex items-center justify-center text-2xl shrink-0">🌐</div>
                 <div class="overflow-hidden">
-                    <span class="text-[10px] uppercase font-bold opacity-75 block">Explorar</span>
-                    <h4 class="text-xs font-black truncate">Todas</h4>
+                    <span class="text-[11px] uppercase font-bold opacity-75 block tracking-wider">Ver Todo</span>
+                    <h4 class="text-base sm:text-lg font-black truncate">Todos los Vehículos</h4>
                 </div>
+            </div>
+
+            <!-- Carro -->
+            <div class="filtro-principal group bg-slate-900 hover:bg-slate-800 text-slate-200 p-5 rounded-2xl border-2 border-slate-800 hover:border-amber-500 cursor-pointer transition-all duration-300 hover:scale-[1.02] flex items-center gap-4 shadow-xl" data-principal="Carro">
+                <div class="w-12 h-12 rounded-xl bg-orange-500/20 text-orange-400 flex items-center justify-center text-2xl sm:text-3xl shrink-0 group-hover:rotate-12 transition-transform">🚗</div>
+                <div class="overflow-hidden">
+                    <span class="text-[11px] uppercase font-bold text-slate-400 block tracking-wider">Categoría Principal</span>
+                    <h4 class="text-lg sm:text-xl font-black truncate group-hover:text-amber-400 transition-colors">CARROS</h4>
+                </div>
+            </div>
+
+            <!-- Moto -->
+            <div class="filtro-principal group bg-slate-900 hover:bg-slate-800 text-slate-200 p-5 rounded-2xl border-2 border-slate-800 hover:border-amber-500 cursor-pointer transition-all duration-300 hover:scale-[1.02] flex items-center gap-4 shadow-xl" data-principal="Moto">
+                <div class="w-12 h-12 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center text-2xl sm:text-3xl shrink-0 group-hover:rotate-12 transition-transform">🏍️</div>
+                <div class="overflow-hidden">
+                    <span class="text-[11px] uppercase font-bold text-slate-400 block tracking-wider">Categoría Principal</span>
+                    <h4 class="text-lg sm:text-xl font-black truncate group-hover:text-amber-400 transition-colors">MOTOS</h4>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- 2. SUBCATEGORÍAS (Sistemas y Partes Abajo) -->
+    <section class="max-w-7xl mx-auto px-4 mt-4 w-full">
+        <div id="subcategoriasFiltro" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-3">
+            
+            <!-- Todas las Subcategorías -->
+            <div class="filtro-sub group bg-amber-500/20 text-amber-400 p-3 rounded-xl border border-amber-500/40 cursor-pointer transition-all duration-300 hover:scale-[1.02] flex items-center gap-2.5 shadow-md" data-sub="Todas">
+                <span class="text-base">📌</span>
+                <span class="text-xs font-black truncate">Todas las partes</span>
             </div>
 
             <!-- Motor -->
-            <div class="filtro-cat group bg-slate-900 hover:bg-slate-800 text-slate-200 p-3.5 rounded-2xl border border-slate-800 hover:border-amber-500/50 cursor-pointer transition-all duration-300 hover:scale-[1.03] flex items-center gap-3 shadow-md" data-cat="Motor">
-                <div class="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center text-lg shrink-0 group-hover:rotate-12 transition-transform">⚙️</div>
-                <div class="overflow-hidden">
-                    <span class="text-[10px] uppercase font-bold text-slate-500 block">Sistema</span>
-                    <h4 class="text-xs font-black truncate group-hover:text-amber-400 transition-colors">Motor</h4>
-                </div>
+            <div class="filtro-sub group bg-slate-900 hover:bg-slate-800 text-slate-200 p-3 rounded-xl border border-slate-800 hover:border-amber-500/50 cursor-pointer transition-all duration-300 hover:scale-[1.02] flex items-center gap-2.5 shadow-md" data-sub="Motor">
+                <span class="text-base">⚙️</span>
+                <span class="text-xs font-black truncate group-hover:text-amber-400 transition-colors">Motor</span>
             </div>
 
             <!-- Frenos -->
-            <div class="filtro-cat group bg-slate-900 hover:bg-slate-800 text-slate-200 p-3.5 rounded-2xl border border-slate-800 hover:border-amber-500/50 cursor-pointer transition-all duration-300 hover:scale-[1.03] flex items-center gap-3 shadow-md" data-cat="Frenos">
-                <div class="w-9 h-9 rounded-xl bg-red-500/10 text-red-400 flex items-center justify-center text-lg shrink-0 group-hover:-rotate-12 transition-transform">🛑</div>
-                <div class="overflow-hidden">
-                    <span class="text-[10px] uppercase font-bold text-slate-500 block">Seguridad</span>
-                    <h4 class="text-xs font-black truncate group-hover:text-amber-400 transition-colors">Frenos</h4>
-                </div>
+            <div class="filtro-sub group bg-slate-900 hover:bg-slate-800 text-slate-200 p-3 rounded-xl border border-slate-800 hover:border-amber-500/50 cursor-pointer transition-all duration-300 hover:scale-[1.02] flex items-center gap-2.5 shadow-md" data-sub="Frenos">
+                <span class="text-base">🛑</span>
+                <span class="text-xs font-black truncate group-hover:text-amber-400 transition-colors">Frenos</span>
             </div>
 
             <!-- Suspensión -->
-            <div class="filtro-cat group bg-slate-900 hover:bg-slate-800 text-slate-200 p-3.5 rounded-2xl border border-slate-800 hover:border-amber-500/50 cursor-pointer transition-all duration-300 hover:scale-[1.03] flex items-center gap-3 shadow-md" data-cat="Suspensión">
-                <div class="w-9 h-9 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center text-lg shrink-0 group-hover:rotate-12 transition-transform">🔩</div>
-                <div class="overflow-hidden">
-                    <span class="text-[10px] uppercase font-bold text-slate-500 block">Estabilidad</span>
-                    <h4 class="text-xs font-black truncate group-hover:text-amber-400 transition-colors">Suspensión</h4>
-                </div>
+            <div class="filtro-sub group bg-slate-900 hover:bg-slate-800 text-slate-200 p-3 rounded-xl border border-slate-800 hover:border-amber-500/50 cursor-pointer transition-all duration-300 hover:scale-[1.02] flex items-center gap-2.5 shadow-md" data-sub="Suspensión">
+                <span class="text-base">🔩</span>
+                <span class="text-xs font-black truncate group-hover:text-amber-400 transition-colors">Suspensión</span>
             </div>
 
             <!-- Eléctrico -->
-            <div class="filtro-cat group bg-slate-900 hover:bg-slate-800 text-slate-200 p-3.5 rounded-2xl border border-slate-800 hover:border-amber-500/50 cursor-pointer transition-all duration-300 hover:scale-[1.03] flex items-center gap-3 shadow-md" data-cat="Eléctrico">
-                <div class="w-9 h-9 rounded-xl bg-yellow-500/10 text-yellow-400 flex items-center justify-center text-lg shrink-0 group-hover:scale-125 transition-transform">⚡</div>
-                <div class="overflow-hidden">
-                    <span class="text-[10px] uppercase font-bold text-slate-500 block">Energía</span>
-                    <h4 class="text-xs font-black truncate group-hover:text-amber-400 transition-colors">Eléctrico</h4>
-                </div>
+            <div class="filtro-sub group bg-slate-900 hover:bg-slate-800 text-slate-200 p-3 rounded-xl border border-slate-800 hover:border-amber-500/50 cursor-pointer transition-all duration-300 hover:scale-[1.02] flex items-center gap-2.5 shadow-md" data-sub="Eléctrico">
+                <span class="text-base">⚡</span>
+                <span class="text-xs font-black truncate group-hover:text-amber-400 transition-colors">Eléctrico</span>
+            </div>
+
+            <!-- Lubricantes -->
+            <div class="filtro-sub group bg-slate-900 hover:bg-slate-800 text-slate-200 p-3 rounded-xl border border-slate-800 hover:border-amber-500/50 cursor-pointer transition-all duration-300 hover:scale-[1.02] flex items-center gap-2.5 shadow-md" data-sub="Lubricantes">
+                <span class="text-base">🛢️</span>
+                <span class="text-xs font-black truncate group-hover:text-amber-400 transition-colors">Lubricantes</span>
             </div>
 
             <!-- Accesorios -->
-            <div class="filtro-cat group bg-slate-900 hover:bg-slate-800 text-slate-200 p-3.5 rounded-2xl border border-slate-800 hover:border-amber-500/50 cursor-pointer transition-all duration-300 hover:scale-[1.03] flex items-center gap-3 shadow-md col-span-2 sm:col-span-1" data-cat="Accesorios">
-                <div class="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-lg shrink-0 group-hover:rotate-45 transition-transform">🧰</div>
-                <div class="overflow-hidden">
-                    <span class="text-[10px] uppercase font-bold text-slate-500 block">General</span>
-                    <h4 class="text-xs font-black truncate group-hover:text-amber-400 transition-colors">Accesorios</h4>
-                </div>
+            <div class="filtro-sub group bg-slate-900 hover:bg-slate-800 text-slate-200 p-3 rounded-xl border border-slate-800 hover:border-amber-500/50 cursor-pointer transition-all duration-300 hover:scale-[1.02] flex items-center gap-2.5 shadow-md" data-sub="Accesorios">
+                <span class="text-base">🧰</span>
+                <span class="text-xs font-black truncate group-hover:text-amber-400 transition-colors">Accesorios</span>
             </div>
 
         </div>
@@ -267,7 +290,7 @@
         </div>
     </div>
 
-    <!-- Script de Firebase y Lógica -->
+    <!-- Script de Firebase y Lógica de Filtrado -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
         import { getDatabase, ref, onValue, push } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-database.js";
@@ -283,11 +306,37 @@
         const db = getDatabase(app);
 
         let inventarioGlobal = [];
-        let categoriaSeleccionada = "Todos";
+        let categoriaPrincipal = "Todos"; // "Todos", "Carro", "Moto"
+        let subcategoriaFiltro = "Todas"; // "Todas", "Motor", "Frenos", "Lubricantes", etc.
         let ciudadSeleccionada = "Todas";
         let tiendaFiltroUid = "Todas";
         let productoSeleccionado = null;
         let productoAReportar = null;
+
+        let totalReportesAnterior = -1;
+
+        function reproducirSonidoAlerta() {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                
+                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(587.33, audioCtx.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.15);
+                
+                gainNode.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                
+                oscillator.start();
+                oscillator.stop(audioCtx.currentTime + 0.4);
+            } catch (e) {
+                console.log("Audio bloqueado:", e);
+            }
+        }
 
         onValue(ref(db), (snapshot) => {
             const data = snapshot.val() || {};
@@ -295,6 +344,7 @@
             const inventarios = data.inventarios || {};
 
             inventarioGlobal = [];
+            let contadorTotalReportesActuales = 0;
 
             Object.entries(inventarios).forEach(([uidTienda, repuestos]) => {
                 const infoTienda = tiendas[uidTienda] || {};
@@ -305,6 +355,10 @@
                 }
                 
                 Object.entries(repuestos).forEach(([idProd, prod]) => {
+                    if (prod.reportes) {
+                        contadorTotalReportesActuales += Object.keys(prod.reportes).length;
+                    }
+
                     if (parseInt(prod.stock) > 0) {
                         inventarioGlobal.push({
                             id: idProd,
@@ -320,8 +374,82 @@
                 });
             });
 
+            if (totalReportesAnterior === -1) {
+                totalReportesAnterior = contadorTotalReportesActuales;
+            } else if (contadorTotalReportesActuales > totalReportesAnterior) {
+                reproducirSonidoAlerta();
+                totalReportesAnterior = contadorTotalReportesActuales;
+            }
+
+            renderizarDescuentos();
             renderizarCatalogo();
         });
+
+        // FUNCIÓN: Renderizar la cuadrícula de descuentos con modelos compatibles organizados en etiquetas
+        function renderizarDescuentos() {
+            const gridDesc = document.getElementById('gridDescuentos');
+            if (!gridDesc) return;
+            gridDesc.innerHTML = "";
+
+            const conDescuento = inventarioGlobal.filter(p => (parseInt(p.descuento) || 0) > 0);
+
+            if (conDescuento.length > 0) {
+                conDescuento.forEach(prod => {
+                    const stock = parseInt(prod.stock) || 0;
+                    const descVal = parseInt(prod.descuento) || 0;
+                    const precioOriginal = parseFloat(prod.precio) || 0;
+                    const precioFinal = precioOriginal * (1 - descVal / 100);
+                    const nombreMayus = prod.nombre ? prod.nombre.toUpperCase() : '';
+                    
+                    const modelosText = prod.modeloCompatible || prod.modelos || prod.modelosCompatibles || prod.compatibles || prod.vehiculosCompatibles || prod.compatibilidad || '';
+                    let modelosBoxDesc = '';
+                    if (modelosText) {
+                        const listaTags = modelosText.split(',').map(m => `<span class="bg-amber-500/15 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase">${m.trim()}</span>`).join('');
+                        modelosBoxDesc = `
+                            <div class="bg-slate-950 border border-slate-800 p-2 rounded-xl my-2 shadow-inner">
+                                <span class="text-[9px] uppercase font-bold text-slate-400 block mb-1">🚗 Modelos:</span>
+                                <div class="flex flex-wrap gap-1">
+                                    ${listaTags}
+                                </div>
+                            </div>
+                        `;
+                    }
+
+                    const imagenHtml = prod.imagenUrl 
+                        ? `<div class="w-full h-32 bg-white rounded-2xl overflow-hidden mb-3 border border-slate-200 flex items-center justify-center p-1 relative group">
+                               <img src="${prod.imagenUrl}" class="max-w-full max-h-full object-contain transition-transform duration-300 group-hover:scale-110">
+                           </div>` 
+                        : `<div class="w-full h-24 bg-white rounded-2xl flex items-center justify-center text-slate-400 text-3xl mb-3 border border-slate-200">📷</div>`;
+
+                    gridDesc.innerHTML += `
+                        <div class="bg-slate-950 border-2 border-red-500/60 p-4 rounded-2xl flex flex-col justify-between gap-3 shadow-[0_0_15px_rgba(239,68,68,0.15)] relative hover:border-amber-500 transition-all group">
+                            <span class="absolute top-3 right-3 bg-gradient-to-r from-red-600 to-amber-500 text-slate-950 font-black px-2.5 py-1 rounded-xl text-[10px] shadow-lg uppercase tracking-wider animate-pulse z-10">🔥 -${descVal}% OFF</span>
+                            <div>
+                                ${imagenHtml}
+                                <span class="text-[10px] uppercase font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-md border border-amber-500/20 inline-block mb-1">Oferta Especial</span>
+                                <h4 class="text-xs sm:text-sm font-black text-white uppercase truncate group-hover:text-amber-400 transition-colors">${nombreMayus}</h4>
+                                <p class="text-[10px] text-slate-400 truncate mt-0.5">🏢 ${prod.nombreTienda}</p>
+                                ${modelosBoxDesc}
+                            </div>
+                            <div class="flex items-center justify-between pt-3 border-t border-slate-800 mt-1">
+                                <div>
+                                    <span class="text-slate-500 text-[10px] uppercase font-bold block">Ahorra hoy</span>
+                                    <div class="flex items-center gap-1.5">
+                                        <span class="text-emerald-400 font-black text-base">$${precioFinal.toFixed(2)}</span>
+                                        <span class="text-slate-500 text-xs line-through">$${precioOriginal.toFixed(2)}</span>
+                                    </div>
+                                </div>
+                                <button onclick='abrirModalPedido(${JSON.stringify(prod)})' class="bg-gradient-to-r from-amber-500 to-yellow-400 hover:from-amber-400 hover:to-yellow-300 text-slate-950 font-black py-2 px-3 rounded-xl text-xs transition cursor-pointer shadow-lg shadow-amber-500/20 active:scale-95">
+                                    Pedir 🚚
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+            } else {
+                gridDesc.innerHTML = `<p class="text-slate-500 text-xs italic col-span-full text-center py-6">No hay descuentos activos en este momento.</p>`;
+            }
+        }
 
         function renderizarCatalogo() {
             const grid = document.getElementById('gridCatalogo');
@@ -329,11 +457,30 @@
             grid.innerHTML = "";
 
             const filtrados = inventarioGlobal.filter(p => {
-                const coincideCat = categoriaSeleccionada === "Todos" || p.categoria === categoriaSeleccionada;
+                const vehProd = p.vehiculo || (p.categoria === 'Moto' ? 'Moto' : 'Carro');
+                const catProd = p.categoria || "Accesorios";
+                const oemProd = p.codigoOem ? p.codigoOem.toLowerCase() : "";
+                
+                const modelosText = p.modeloCompatible || p.modelos || p.modelosCompatibles || p.compatibles || p.vehiculosCompatibles || p.compatibilidad || "";
+                const modelosProd = modelosText.toLowerCase();
+                
+                let pasaPrincipal = true;
+                if (categoriaPrincipal === "Carro") {
+                    pasaPrincipal = (vehProd === "Carro");
+                } else if (categoriaPrincipal === "Moto") {
+                    pasaPrincipal = (vehProd === "Moto");
+                }
+
+                let pasaSub = true;
+                if (subcategoriaFiltro !== "Todas") {
+                    pasaSub = (catProd === subcategoriaFiltro);
+                }
+
                 const coincideCiudad = ciudadSeleccionada === "Todas" || p.ciudadTienda === ciudadSeleccionada;
                 const coincideTienda = tiendaFiltroUid === "Todas" || p.uidTienda === tiendaFiltroUid;
-                const coincideBusqueda = p.nombre.toLowerCase().includes(busqueda) || p.categoria.toLowerCase().includes(busqueda) || p.ciudadTienda.toLowerCase().includes(busqueda) || p.nombreTienda.toLowerCase().includes(busqueda);
-                return coincideCat && coincideCiudad && coincideTienda && coincideBusqueda;
+                const coincideBusqueda = p.nombre.toLowerCase().includes(busqueda) || oemProd.includes(busqueda) || modelosProd.includes(busqueda) || catProd.toLowerCase().includes(busqueda) || vehProd.toLowerCase().includes(busqueda) || p.ciudadTienda.toLowerCase().includes(busqueda) || p.nombreTienda.toLowerCase().includes(busqueda);
+                
+                return pasaPrincipal && pasaSub && coincideCiudad && coincideTienda && coincideBusqueda;
             }).sort((a, b) => {
                 const aVerif = a.verified ? 1 : 0;
                 const bVerif = b.verified ? 1 : 0;
@@ -348,6 +495,24 @@
                     const precioFinal = descVal > 0 ? precioOriginal * (1 - descVal / 100) : precioOriginal;
                     
                     const nombreMayus = prod.nombre ? prod.nombre.toUpperCase() : '';
+                    const vehProdLabel = prod.vehiculo || (prod.categoria === 'Moto' ? 'Moto' : 'Carro');
+                    const catProdLabel = prod.categoria || 'Accesorios';
+                    const oemBadge = prod.codigoOem ? `<span class="bg-slate-800 text-amber-400 font-bold px-2 py-0.5 rounded-lg text-[10px] border border-amber-500/20">OEM: ${prod.codigoOem.toUpperCase()}</span>` : '';
+                    
+                    const modelosText = prod.modeloCompatible || prod.modelos || prod.modelosCompatibles || prod.compatibles || prod.vehiculosCompatibles || prod.compatibilidad || '';
+                    let modelosBox = '';
+                    if (modelosText) {
+                        const listaTags = modelosText.split(',').map(m => `<span class="bg-amber-500/15 text-amber-300 border border-amber-500/30 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase">${m.trim()}</span>`).join('');
+                        modelosBox = `
+                            <div class="bg-slate-950 border border-slate-800 p-2.5 rounded-xl my-2 shadow-inner">
+                                <span class="text-[10px] uppercase font-bold text-slate-400 block mb-1.5 flex items-center gap-1">🚗 Modelos Compatibles:</span>
+                                <div class="flex flex-wrap gap-1.5">
+                                    ${listaTags}
+                                </div>
+                            </div>
+                        `;
+                    }
+
                     const reportesCount = prod.reportes ? Object.keys(prod.reportes).length : 0;
                     const tieneAdvertencia = reportesCount > 0;
 
@@ -381,18 +546,18 @@
                     }
 
                     const imagenHtml = prod.imagenUrl 
-                        ? `<div onclick='abrirZoomImagen("${prod.imagenUrl}", "${nombreMayus.replace(/'/g, "\\'")}")' class="w-full h-44 bg-slate-950 rounded-xl overflow-hidden mb-3 border border-slate-800 flex items-center justify-center p-1 relative group cursor-pointer">
+                        ? `<div onclick='abrirZoomImagen("${prod.imagenUrl}", "${nombreMayus.replace(/'/g, "\\'")}")' class="w-full h-44 bg-white rounded-xl overflow-hidden mb-3 border border-slate-200 flex items-center justify-center p-1 relative group cursor-pointer">
                                <img src="${prod.imagenUrl}" class="max-w-full max-h-full object-contain transition-transform duration-300 group-hover:scale-110">
                                <div class="absolute inset-0 bg-slate-950/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-amber-400 text-xs font-bold gap-1 shadow-inner">
                                    <span class="text-2xl animate-pulse">🔍</span>
                                    <span>Click para ampliar</span>
                                </div>
                            </div>` 
-                        : `<div class="w-full h-24 bg-slate-950 rounded-xl flex items-center justify-center text-slate-600 text-3xl mb-3 border border-slate-800">📷</div>`;
+                        : `<div class="w-full h-24 bg-white rounded-xl flex items-center justify-center text-slate-400 text-3xl mb-3 border border-slate-200">📷</div>`;
 
                     const telWspLimpio = prod.telefonoWsp ? prod.telefonoWsp.replace(/\D/g,'') : '';
                     const btnWspTienda = telWspLimpio ? `
-                        <a href="https://wa.me/${telWspLimpio}?text=${encodeURIComponent(`¡Hola! 👋 Vi su repuesto *${nombreMayus}* en *TurespuestoYa* y me interesa.`)}" target="_blank" class="bg-emerald-600/20 hover:bg-emerald-600 text-emerald-400 hover:text-white font-bold px-3 py-2 rounded-xl text-xs transition border border-emerald-500/30 flex items-center gap-1">
+                        <a href="https://wa.me/${telWspLimpio}?text=${encodeURIComponent(`¡Hola! 👋 Vi su repuesto *${nombreMayus}* en *Tu respuesto ⚡ Ya* y me interesa.`)}" target="_blank" class="bg-emerald-600/20 hover:bg-emerald-600 text-emerald-400 hover:text-white font-bold px-3 py-2 rounded-xl text-xs transition border border-emerald-500/30 flex items-center gap-1">
                             💬 WhatsApp
                         </a>
                     ` : '';
@@ -403,15 +568,22 @@
                             <div>
                                 ${imagenHtml}
                                 
-                                <div class="flex justify-between items-center gap-2 mb-2">
-                                    <span class="text-[10px] uppercase font-bold text-amber-500 bg-amber-500/10 px-2.5 py-1 rounded-lg border border-amber-500/20">${prod.categoria}</span>
-                                    <span onclick='filtrarPorTienda("${prod.uidTienda}", "${prod.nombreTienda.replace(/'/g, "\\'")}")' class="text-xs font-black text-amber-400 bg-slate-950 hover:bg-slate-900 px-3 py-1.5 rounded-xl border border-amber-500/30 truncate shadow-md cursor-pointer transition flex items-center gap-1" title="Ver catálogo de esta tienda">
-                                        🏢 ${prod.nombreTienda} ${insigniaVerificado}
-                                    </span>
+                                <div class="flex flex-col gap-2 mb-2">
+                                    <div class="flex justify-end">
+                                        <span onclick='filtrarPorTienda("${prod.uidTienda}", "${prod.nombreTienda.replace(/'/g, "\\'")}")' class="text-xs font-black text-amber-400 bg-slate-950 hover:bg-slate-900 px-3 py-1.5 rounded-xl border border-amber-500/30 truncate shadow-md cursor-pointer transition flex items-center gap-1 inline-flex" title="Ver catálogo de esta tienda">
+                                            🏢 ${prod.nombreTienda} ${insigniaVerificado}
+                                        </span>
+                                    </div>
+                                    <div class="flex items-center gap-1.5 flex-wrap">
+                                        <span class="text-[10px] uppercase font-bold text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded-lg border border-amber-500/20">${vehProdLabel}</span>
+                                        <span class="text-[10px] uppercase font-bold text-slate-300 bg-slate-950 px-2 py-0.5 rounded-lg border border-slate-800">${catProdLabel}</span>
+                                        ${oemBadge}
+                                    </div>
                                 </div>
 
                                 <h3 class="text-base sm:text-lg font-black text-white tracking-wide leading-snug mt-1 mb-2 uppercase">${nombreMayus}</h3>
                                 
+                                ${modelosBox}
                                 ${alertaAdvertenciaCard}
                                 ${alertaStockBajo}
                                 
@@ -515,8 +687,6 @@
                 fecha: new Date().toLocaleString()
             };
 
-            // Guardar reporte en la ruta general para el administrador y dentro del producto para advertencia visual instantánea
-            const refReporteGlobal = push(ref(db, 'reportesAdmin'));
             const promesaGlobal = push(ref(db, `inventarios/${productoAReportar.uidTienda}/${productoAReportar.id}/reportes`), {
                 motivo: motivoFinal,
                 fecha: new Date().toLocaleString()
@@ -559,16 +729,32 @@
             });
         });
 
-        document.querySelectorAll('.filtro-cat').forEach(card => {
+        // Eventos para Categorías Principales (Carro / Moto)
+        document.querySelectorAll('.filtro-principal').forEach(card => {
             card.addEventListener('click', (e) => {
-                document.querySelectorAll('.filtro-cat').forEach(c => {
-                    c.className = "filtro-cat group bg-slate-900 hover:bg-slate-800 text-slate-200 p-3.5 rounded-2xl border border-slate-800 hover:border-amber-500/50 cursor-pointer transition-all duration-300 hover:scale-[1.03] flex items-center gap-3 shadow-md";
+                document.querySelectorAll('.filtro-principal').forEach(c => {
+                    c.className = "filtro-principal group bg-slate-900 hover:bg-slate-800 text-slate-200 p-5 rounded-2xl border-2 border-slate-800 hover:border-amber-500 cursor-pointer transition-all duration-300 hover:scale-[1.02] flex items-center gap-4 shadow-xl";
                 });
                 
                 const targetCard = e.currentTarget;
-                targetCard.className = "filtro-cat group bg-amber-500 text-slate-950 p-3.5 rounded-2xl border border-amber-400 cursor-pointer transition-all duration-300 hover:scale-[1.03] flex items-center gap-3 shadow-lg cat-card-active";
+                targetCard.className = "filtro-principal group bg-amber-500 text-slate-950 p-5 rounded-2xl border-2 border-amber-400 cursor-pointer transition-all duration-300 hover:scale-[1.02] flex items-center gap-4 shadow-xl";
                 
-                categoriaSeleccionada = targetCard.getAttribute('data-cat');
+                categoriaPrincipal = targetCard.getAttribute('data-principal');
+                renderizarCatalogo();
+            });
+        });
+
+        // Eventos para Subcategorías (Sistemas)
+        document.querySelectorAll('.filtro-sub').forEach(card => {
+            card.addEventListener('click', (e) => {
+                document.querySelectorAll('.filtro-sub').forEach(c => {
+                    c.className = "filtro-sub group bg-slate-900 hover:bg-slate-800 text-slate-200 p-3 rounded-xl border border-slate-800 hover:border-amber-500/50 cursor-pointer transition-all duration-300 hover:scale-[1.02] flex items-center gap-2.5 shadow-md";
+                });
+                
+                const targetCard = e.currentTarget;
+                targetCard.className = "filtro-sub group bg-amber-500/20 text-amber-400 p-3 rounded-xl border border-amber-500/40 cursor-pointer transition-all duration-300 hover:scale-[1.02] flex items-center gap-2.5 shadow-md";
+                
+                subcategoriaFiltro = targetCard.getAttribute('data-sub');
                 renderizarCatalogo();
             });
         });
@@ -636,8 +822,8 @@
                     cerrarModal();
 
                     const telWspLimpio = productoSeleccionado.telefonoWsp ? productoSeleccionado.telefonoWsp.replace(/\D/g,'') : '';
-                    const textoWsp = `🛒 *SOLICITUD DE DELIVERY - TurespuestoYa*\n\n` +
-                        `📦 Repuesto: *${nombreMayus}*\n` +
+                    const textoWsp = `🛒 *SOLICITUD DE DELIVERY - Tu respuesto ⚡ Ya*\n\n` +
+                        `📦 Repuesto: *${nombreMayus}* \n` +
                         `💵 Precio: *$${precioFinal.toFixed(2)}*\n\n` +
                         `👤 Cliente: *${cliente}*\n` +
                         `📞 Teléfono: *${telefono}*\n` +

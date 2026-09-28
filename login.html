@@ -38,7 +38,12 @@
 
                 <div>
                     <label class="text-xs text-slate-400 font-bold mb-1.5 block">Contraseña</label>
-                    <input type="password" id="loginPassword" placeholder="••••••••" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-100 text-xs focus:border-amber-500 focus:outline-none transition">
+                    <div class="relative">
+                        <input type="password" id="loginPassword" placeholder="••••••••" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 pr-10 text-slate-100 text-xs focus:border-amber-500 focus:outline-none transition">
+                        <button type="button" id="btnTogglePassword" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 text-xs cursor-pointer focus:outline-none">
+                            👁️
+                        </button>
+                    </div>
                 </div>
 
                 <button type="submit" id="btnIngresar" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-3.5 rounded-xl transition text-xs shadow-lg shadow-amber-500/20 cursor-pointer mt-2">
@@ -70,6 +75,20 @@
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
+
+        // Control para mostrar y ocultar contraseña
+        const btnTogglePassword = document.getElementById('btnTogglePassword');
+        const loginPassword = document.getElementById('loginPassword');
+
+        btnTogglePassword.addEventListener('click', () => {
+            if (loginPassword.type === 'password') {
+                loginPassword.type = 'text';
+                btnTogglePassword.innerText = '🙈';
+            } else {
+                loginPassword.type = 'password';
+                btnTogglePassword.innerText = '👁️';
+            }
+        });
 
         document.getElementById('formLogin').addEventListener('submit', (e) => {
             e.preventDefault();

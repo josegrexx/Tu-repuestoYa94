@@ -1,50 +1,47 @@
 <!-- =============================================================
-     ARCHIVO: panel.html (Panel de Tienda - Versión 5.3 Mobile Optimized)
+     ARCHIVO: panel.html (Panel de Tienda - Versión 4.7 con Factura Fiscal Tamaño Hoja Amplia)
      ============================================================= -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel de Tienda v5.3 - TurespuestoYa</title>
+    <title>Panel de Tienda v4.7 - TurespuestoYa</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style>
         @media print {
-            body * {
-                visibility: hidden;
-            }
-            #modalFacturaFiscal, #modalFacturaFiscal * {
-                visibility: visible;
+            body > *:not(#modalFacturaFiscal) {
+                display: none !important;
             }
             #modalFacturaFiscal {
-                position: absolute;
-                left: 0;
-                top: 0;
-                width: 100%;
-                height: 100%;
+                position: absolute !important;
+                left: 0 !important;
+                top: 0 !important;
+                width: 100% !important;
+                height: auto !important;
                 background: white !important;
                 color: black !important;
-                display: flex !important;
-                align-items: center;
-                justify-content: center;
-                padding: 0;
-                margin: 0;
+                display: block !important;
+                padding: 0 !important;
+                margin: 0 !important;
             }
-            #modalFacturaFiscal > div {
-                box-shadow: none !important;
-                border: none !important;
+            #modalFacturaFiscal .print\:hidden {
+                display: none !important;
+            }
+            #contenidoFacturaImprimir {
+                background: white !important;
+                color: black !important;
+                border: 2px solid #000 !important;
                 width: 100% !important;
                 max-width: 100% !important;
-                background: white !important;
-                color: black !important;
+                box-shadow: none !important;
+                padding: 35px !important;
+                font-size: 13px !important;
+                border-radius: 0 !important;
             }
-            #contenidoFacturaFiscalPrint {
-                background: white !important;
+            #contenidoFacturaImprimir * {
                 color: black !important;
-                border: none !important;
-            }
-            #btnCerrarModalFactura, #btnAccionImprimirFactura {
-                display: none !important;
+                border-color: #000 !important;
             }
         }
     </style>
@@ -52,18 +49,16 @@
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans">
 
     <!-- Header del Panel -->
-    <header class="bg-slate-900 border-b border-slate-800 p-3 sm:p-4 sticky top-0 z-50 shadow-md">
-        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-3">
-            <div class="flex items-center justify-between w-full sm:w-auto">
-                <div class="flex items-center gap-2">
-                    <span class="text-2xl">⚡</span>
-                    <h1 class="text-base sm:text-xl font-black text-amber-500 tracking-wide uppercase">Panel de Tienda <span class="text-[10px] bg-amber-500/10 text-amber-400 px-2 py-0.5 rounded-full border border-amber-500/30">v5.3</span></h1>
-                </div>
+    <header class="bg-slate-900 border-b border-slate-800 p-4 sticky top-0 z-50 shadow-md">
+        <div class="max-w-7xl mx-auto flex flex-wrap justify-between items-center gap-4">
+            <div class="flex items-center gap-2">
+                <span class="text-2xl">⚡</span>
+                <h1 class="text-xl font-black text-amber-500 tracking-wide uppercase">Panel de Tienda <span class="text-xs bg-amber-500/10 text-amber-400 px-2 py-0.5 rounded-full border border-amber-500/30">v4.7</span></h1>
             </div>
             
-            <div class="flex items-center gap-2 flex-wrap justify-center sm:justify-end w-full sm:w-auto">
+            <div class="flex items-center gap-3 flex-wrap">
                 <!-- Botón Principal: Notificaciones con Contador -->
-                <button onclick="enfocarPedidos()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold px-3 py-1.5 rounded-xl text-xs transition border border-slate-700 cursor-pointer flex items-center gap-1.5 relative shadow-sm">
+                <button onclick="enfocarPedidos()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold px-3 py-1.5 rounded-xl text-xs transition border border-slate-700 cursor-pointer flex items-center gap-2 relative shadow-sm">
                     <span>🔔 Notificaciones</span>
                     <span id="badgeNotifHeader" class="bg-amber-500 text-slate-950 text-[10px] px-1.5 py-0.2 rounded-full font-black">0</span>
                 </button>
@@ -92,24 +87,24 @@
     </header>
 
     <!-- Contenido Principal -->
-    <main class="max-w-7xl mx-auto p-3 sm:p-4 flex-grow w-full mt-2 sm:mt-4 flex flex-col gap-4 sm:gap-6">
+    <main class="max-w-7xl mx-auto p-4 flex-grow w-full mt-4 flex flex-col gap-6">
         
         <!-- Tarjeta de Información de la Tienda -->
-        <section class="bg-slate-900 border border-slate-800 p-3 sm:p-4 rounded-2xl shadow-md flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+        <section class="bg-slate-900 border border-slate-800 p-4 rounded-2xl shadow-md flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-amber-500/10 border border-amber-500/30 rounded-xl flex items-center justify-center text-amber-400 text-lg font-black shrink-0">
+                <div class="w-10 h-10 bg-amber-500/10 border border-amber-500/30 rounded-xl flex items-center justify-center text-amber-400 text-lg font-black">
                     🏪
                 </div>
-                <div class="min-w-0">
-                    <h2 id="infoNombreTienda" class="text-sm font-black text-white uppercase tracking-wider truncate">Cargando tienda...</h2>
-                    <div class="flex flex-wrap items-center gap-2 text-xs text-slate-400 mt-0.5">
-                        <span id="infoCorreoTienda" class="truncate">📧 Cargando correo...</span>
-                        <span class="hidden sm:inline">•</span>
-                        <span id="infoTelefonoTienda" class="truncate">📞 Cargando teléfono...</span>
+                <div>
+                    <h2 id="infoNombreTienda" class="text-sm font-black text-white uppercase tracking-wider">Cargando tienda...</h2>
+                    <div class="flex flex-wrap items-center gap-3 text-xs text-slate-400 mt-0.5">
+                        <span id="infoCorreoTienda">📧 Cargando correo...</span>
+                        <span>•</span>
+                        <span id="infoTelefonoTienda">📞 Cargando teléfono...</span>
                     </div>
                 </div>
             </div>
-            <div class="bg-slate-950 border border-slate-800 px-3 py-2 rounded-xl text-left md:text-right w-full md:w-auto">
+            <div class="bg-slate-950 border border-slate-800 px-3 py-2 rounded-xl text-right w-full md:w-auto">
                 <span id="infoRelojHora" class="text-xs font-black text-amber-400 block">--:--:--</span>
                 <span id="infoRelojFecha" class="text-[10px] text-slate-400 uppercase">Cargando fecha...</span>
             </div>
@@ -119,8 +114,8 @@
         <div id="contenedorAlertaAdmin" class="w-full hidden"></div>
 
         <div class="flex flex-col lg:flex-row gap-6">
-            <!-- Columna Izquierda: Formulario -->
-            <section id="seccionFormulario" class="w-full lg:w-1/3 bg-slate-900 border border-slate-800 p-4 sm:p-6 rounded-2xl shadow-xl h-fit lg:sticky lg:top-24">
+            <!-- Columna Izquierda: Formulario con Mini Ventana de Previsualización -->
+            <section id="seccionFormulario" class="w-full lg:w-1/3 bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl h-fit sticky top-24">
                 <h2 id="tituloFormRepuesto" class="text-base font-black text-white mb-4 flex items-center gap-2 border-b border-slate-800 pb-3">
                     ➕ Agregar Nuevo Repuesto
                 </h2>
@@ -135,32 +130,17 @@
 
                     <div class="grid grid-cols-2 gap-3">
                         <div>
-                            <label class="text-xs text-slate-400 font-bold mb-1 block">Código OEM</label>
-                            <input type="text" id="inputOem" placeholder="Ej. 0K01A-34-710" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-slate-100 text-xs focus:border-amber-500 focus:outline-none uppercase">
-                        </div>
-                        <div>
-                            <label class="text-xs text-slate-400 font-bold mb-1 block">Modelo Compatible</label>
-                            <input type="text" id="inputModeloCompatible" placeholder="Ej. Sportage 2012" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-slate-100 text-xs focus:border-amber-500 focus:outline-none">
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="text-xs text-slate-400 font-bold mb-1 block">Vehículo</label>
-                            <select id="inputVehiculo" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-slate-100 text-xs focus:border-amber-500 focus:outline-none cursor-pointer">
-                                <option value="Carro">Carro 🚗</option>
-                                <option value="Moto">Moto 🏍️</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="text-xs text-slate-400 font-bold mb-1 block">Sistema / Parte</label>
+                            <label class="text-xs text-slate-400 font-bold mb-1 block">Categoría</label>
                             <select id="inputCategoria" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-slate-100 text-xs focus:border-amber-500 focus:outline-none cursor-pointer">
                                 <option value="Motor">Motor</option>
                                 <option value="Frenos">Frenos</option>
                                 <option value="Suspensión">Suspensión</option>
                                 <option value="Eléctrico">Eléctrico</option>
-                                <option value="Accesorios">Accesorios</option>
                             </select>
+                        </div>
+                        <div>
+                            <label class="text-xs text-slate-400 font-bold mb-1 block">Stock Disponible</label>
+                            <input type="number" id="inputStock" placeholder="Ej. 5" min="1" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-slate-100 text-xs focus:border-amber-500 focus:outline-none">
                         </div>
                     </div>
 
@@ -175,15 +155,8 @@
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="text-xs text-slate-400 font-bold mb-1 block">Stock Disponible</label>
-                            <input type="number" id="inputStock" placeholder="Ej. 5" min="1" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-slate-100 text-xs focus:border-amber-500 focus:outline-none">
-                        </div>
-                    </div>
-
                     <div>
-                        <label class="text-xs text-slate-400 font-bold mb-1 block">Foto del Repuesto (Obligatoria 📸)</label>
+                        <label class="text-xs text-slate-400 font-bold mb-1 block">Foto del Repuesto (Archivo)</label>
                         <input type="file" id="inputArchivoFoto" accept="image/*" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-300 text-xs focus:border-amber-500 focus:outline-none file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-amber-500 file:text-slate-950 hover:file:bg-amber-400 cursor-pointer mb-3">
                         
                         <div class="bg-slate-950 border border-slate-800 rounded-xl p-3 flex flex-col items-center gap-2">
@@ -242,29 +215,18 @@
                 </div>
 
                 <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl shadow-md">
-                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-800 pb-3 mb-3 gap-3">
+                    <div class="flex justify-between items-center border-b border-slate-800 pb-3 mb-3">
                         <h3 class="text-sm font-black text-white uppercase tracking-wider">Historial Global de Transacciones</h3>
-                        <input type="text" id="inputBuscarVentasFecha" placeholder="Buscar por fecha (Ej. 24/9/2026)..." class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-1.5 text-slate-100 text-xs focus:border-amber-500 focus:outline-none w-full sm:w-56">
                     </div>
-                    <div id="gridVentas" class="flex flex-col gap-3 max-h-64 overflow-y-auto pr-1">
+                    <div id="gridVentas" class="flex flex-col gap-2 max-h-48 overflow-y-auto pr-1">
                         <p class="text-slate-500 text-xs italic text-center py-4">Aún no hay transacciones registradas.</p>
                     </div>
                 </div>
 
                 <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl shadow-md">
-                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-800 pb-3 mb-4 gap-3">
-                        <div class="flex items-center gap-3 flex-wrap">
-                            <h3 class="text-sm font-black text-white uppercase tracking-wider">Mi Inventario Publicado</h3>
-                            <!-- Botones de Cambio de Vista: Tarjetas / Lista -->
-                            <div class="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800">
-                                <button onclick="cambiarVistaInventario('grid')" id="btnVistaGrid" class="px-2.5 py-1 rounded-lg text-xs font-bold transition bg-amber-500 text-slate-950 cursor-pointer">🖼️ Tarjetas</button>
-                                <button onclick="cambiarVistaInventario('list')" id="btnVistaList" class="px-2.5 py-1 rounded-lg text-xs font-bold transition text-slate-400 hover:text-white cursor-pointer">📄 Lista</button>
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-2 w-full sm:w-auto">
-                            <input type="text" id="inputBuscarMiInventario" placeholder="Buscar en mi inventario..." class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-1.5 text-slate-100 text-xs focus:border-amber-500 focus:outline-none w-full sm:w-48">
-                            <span id="contadorMisRepuestos" class="bg-amber-500/10 text-amber-400 font-bold px-3 py-1 rounded-xl text-xs border border-amber-500/20 whitespace-nowrap">0 repuestos</span>
-                        </div>
+                    <div class="flex justify-between items-center border-b border-slate-800 pb-3 mb-4">
+                        <h3 class="text-sm font-black text-white uppercase tracking-wider">Mi Inventario Publicado</h3>
+                        <span id="contadorMisRepuestos" class="bg-amber-500/10 text-amber-400 font-bold px-3 py-1 rounded-xl text-xs border border-amber-500/20">0 repuestos</span>
                     </div>
 
                     <div id="gridMisRepuestos" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -277,7 +239,7 @@
 
     <!-- Modal Venta Física -->
     <div id="modalVentaFisica" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden justify-center items-center p-4 z-50">
-        <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl max-w-md w-full flex flex-col gap-4 shadow-2xl max-h-[90vh] overflow-y-auto">
+        <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl max-w-md w-full flex flex-col gap-4 shadow-2xl">
             <div class="flex justify-between items-start">
                 <div>
                     <span class="text-[10px] uppercase font-bold text-amber-500 tracking-wider">Punto de Venta Local</span>
@@ -312,92 +274,9 @@
         </div>
     </div>
 
-    <!-- Modal Factura Fiscal -->
-    <div id="modalFacturaFiscal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden justify-center items-center p-4 z-50">
-        <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl max-w-lg w-full flex flex-col gap-4 shadow-2xl max-h-[90vh] overflow-y-auto">
-            <div class="flex justify-between items-start border-b border-slate-800 pb-3">
-                <div>
-                    <span class="text-[10px] uppercase font-bold text-amber-500 tracking-wider">Documento Fiscal</span>
-                    <h3 class="text-lg font-black text-white uppercase">Factura Fiscal</h3>
-                </div>
-                <button id="btnCerrarModalFactura" onclick="cerrarModalFacturaFiscal()" class="text-slate-400 hover:text-white text-lg font-bold px-2 cursor-pointer">✕</button>
-            </div>
-
-            <!-- Contenido de la Factura -->
-            <div id="contenidoFacturaFiscalPrint" class="bg-slate-950 border border-slate-800 p-4 rounded-xl flex flex-col gap-4 text-xs text-slate-200">
-                <div class="flex justify-between items-start border-b border-slate-800 pb-3">
-                    <div>
-                        <h4 id="facturaTiendaNombre" class="font-black text-amber-400 text-sm uppercase">Cargando tienda...</h4>
-                        <p id="facturaTiendaCorreo" class="text-slate-400 text-[10px]">📧 Cargando correo...</p>
-                        <p id="facturaTiendaTelefono" class="text-slate-400 text-[10px]">📞 Cargando teléfono...</p>
-                    </div>
-                    <div class="text-right">
-                        <span class="text-amber-500 font-black block text-xs" id="facturaNumero">N° FAC-000000</span>
-                        <span id="facturaFecha" class="text-slate-400 text-[10px]">Fecha: --/--/----</span>
-                        <span id="facturaTipo" class="text-emerald-400 text-[10px] block font-bold mt-0.5 uppercase">Tipo: Presencial</span>
-                    </div>
-                </div>
-
-                <div class="bg-slate-900/60 p-3 rounded-lg border border-slate-800">
-                    <span class="text-[10px] text-amber-400 font-bold uppercase block mb-1">Datos del Cliente / Comprador</span>
-                    <p><strong>Nombre:</strong> <span id="facturaComprador">--</span></p>
-                    <p><strong>Teléfono:</strong> <span id="facturaTelefonoCliente">--</span></p>
-                    <p><strong>Notas:</strong> <span id="facturaNotas">--</span></p>
-                </div>
-
-                <div class="flex flex-col gap-1">
-                    <span class="text-[10px] text-amber-400 font-bold uppercase block">Detalle de la Compra</span>
-                    <div class="border border-slate-800 rounded-lg overflow-hidden">
-                        <table class="w-full text-left border-collapse">
-                            <thead>
-                                <tr class="bg-slate-900 text-slate-400 text-[10px] border-b border-slate-800">
-                                    <th class="p-2">Repuesto</th>
-                                    <th class="p-2 text-center">Cant.</th>
-                                    <th class="p-2 text-right">Precio Unit.</th>
-                                    <th class="p-2 text-right">Total</th>
-                                </tr>
-                            </thead>
-                            <tbody id="facturaTablaDetalle">
-                                <!-- Dinámico -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <div class="flex flex-col gap-1 border-t border-slate-800 pt-3 text-right">
-                    <div class="flex justify-between text-slate-400 text-[11px]">
-                        <span>Subtotal:</span>
-                        <span id="facturaSubtotal">$0.00</span>
-                    </div>
-                    <div class="flex justify-between text-slate-400 text-[11px]">
-                        <span>IVA (16% / Impuesto aplicable):</span>
-                        <span id="facturaImpuesto">$0.00</span>
-                    </div>
-                    <div class="flex justify-between text-white font-black text-sm pt-1 border-t border-slate-800">
-                        <span>Total General:</span>
-                        <span id="facturaTotal" class="text-emerald-400">$0.00</span>
-                    </div>
-                </div>
-
-                <div class="text-center text-[9px] text-slate-500 pt-2 border-t border-slate-800/60 uppercase tracking-wider">
-                    ¡Gracias por su compra en TurespuestoYa! - Documento Fiscal Válido
-                </div>
-            </div>
-
-            <div id="btnAccionImprimirFactura" class="flex gap-2">
-                <button onclick="imprimirFacturaFiscal()" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-3 rounded-xl transition text-xs shadow-lg shadow-amber-500/20 cursor-pointer flex-1 flex items-center justify-center gap-1.5">
-                    🖨️ Imprimir / Guardar PDF
-                </button>
-                <button onclick="cerrarModalFacturaFiscal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 px-4 rounded-xl transition text-xs cursor-pointer">
-                    Cerrar
-                </button>
-            </div>
-        </div>
-    </div>
-
     <!-- Modal Cambiar Contraseña -->
     <div id="modalCambiarPassword" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden justify-center items-center p-4 z-50">
-        <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl max-w-md w-full flex flex-col gap-4 shadow-2xl max-h-[90vh] overflow-y-auto">
+        <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl max-w-md w-full flex flex-col gap-4 shadow-2xl">
             <div class="flex justify-between items-start">
                 <div>
                     <span class="text-[10px] uppercase font-bold text-amber-500 tracking-wider">Seguridad de la Cuenta</span>
@@ -420,6 +299,34 @@
             <button id="btnEjecutarCambioPassword" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-3 rounded-xl transition text-xs shadow-lg shadow-amber-500/20 cursor-pointer">
                 Actualizar Contraseña 🔑
             </button>
+        </div>
+    </div>
+
+    <!-- Modal Factura Fiscal / Hoja de Impresión Amplia -->
+    <div id="modalFacturaFiscal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden justify-center items-center p-4 z-50 overflow-y-auto">
+        <div class="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-2xl max-w-3xl w-full flex flex-col gap-5 shadow-2xl my-auto print:bg-white print:text-black print:border-none print:p-0 print:shadow-none print:w-full print:max-w-none">
+            
+            <div class="flex justify-between items-center print:hidden border-b border-slate-800 pb-3">
+                <div>
+                    <span class="text-xs uppercase font-bold text-amber-500 tracking-wider">Vista Previa de Impresión</span>
+                    <h3 class="text-xl font-black text-white uppercase">Factura Fiscal</h3>
+                </div>
+                <button onclick="cerrarModalFactura()" class="text-slate-400 hover:text-white text-xl font-bold px-2 cursor-pointer">✕</button>
+            </div>
+
+            <!-- Hoja Blanca de la Factura (Diseño Amplio) -->
+            <div id="contenidoFacturaImprimir" class="bg-white text-slate-950 p-6 md:p-8 rounded-xl flex flex-col gap-6 font-sans shadow-2xl border border-slate-200 print:border-2 print:border-black print:p-8 print:shadow-none">
+                <!-- Se genera dinámicamente -->
+            </div>
+
+            <div class="flex gap-3 print:hidden">
+                <button onclick="window.print()" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-3 rounded-xl transition text-sm shadow-lg shadow-amber-500/20 cursor-pointer flex-1 flex items-center justify-center gap-2">
+                    🖨️ Imprimir Factura Fiscal
+                </button>
+                <button onclick="cerrarModalFactura()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 px-6 rounded-xl transition text-sm cursor-pointer">
+                    Cerrar
+                </button>
+            </div>
         </div>
     </div>
 
@@ -446,7 +353,6 @@
         let ventasGlobalesMemoria = {};
         let inventarioActivoMemoria = {};
         let sonidoActivado = true;
-        let modoVistaInventario = 'grid'; // 'grid' para tarjetas con foto o 'list' para lista compacta
 
         // Reloj en tiempo real
         setInterval(() => {
@@ -454,22 +360,6 @@
             document.getElementById('infoRelojHora').innerText = ahora.toLocaleTimeString();
             document.getElementById('infoRelojFecha').innerText = ahora.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
         }, 1000);
-
-        // Control de vista del inventario
-        window.cambiarVistaInventario = function(modo) {
-            modoVistaInventario = modo;
-            const btnGrid = document.getElementById('btnVistaGrid');
-            const btnList = document.getElementById('btnVistaList');
-
-            if (modo === 'grid') {
-                btnGrid.className = "px-2.5 py-1 rounded-lg text-xs font-bold transition bg-amber-500 text-slate-950 cursor-pointer";
-                btnList.className = "px-2.5 py-1 rounded-lg text-xs font-bold transition text-slate-400 hover:text-white cursor-pointer";
-            } else {
-                btnList.className = "px-2.5 py-1 rounded-lg text-xs font-bold transition bg-amber-500 text-slate-950 cursor-pointer";
-                btnGrid.className = "px-2.5 py-1 rounded-lg text-xs font-bold transition text-slate-400 hover:text-white cursor-pointer";
-            }
-            renderizarInventarioYResumen();
-        };
 
         // Control del Menú Desplegable de Opciones
         window.toggleMenuOpciones = function() {
@@ -489,6 +379,7 @@
             menu.classList.remove('flex');
         };
 
+        // Cerrar menú al hacer clic fuera
         window.addEventListener('click', function(e) {
             const menu = document.getElementById('menuDesplegableOpciones');
             const botonOpciones = e.target.closest('button');
@@ -527,55 +418,117 @@
             modal.classList.remove('flex');
         };
 
-        // Funciones para Factura Fiscal (Usa el número de identificación único de la venta)
-        window.abrirFacturaFiscal = function(v) {
-            const nombreTienda = document.getElementById('infoNombreTienda').innerText || 'Mi Tienda';
-            const correoTienda = document.getElementById('infoCorreoTienda').innerText || '';
-            const telTienda = document.getElementById('infoTelefonoTienda').innerText || '';
+        // Generar y Abrir Modal de Factura Fiscal para Impresión en Hoja Grande
+        window.abrirFactura = function(v) {
+            const totalNum = parseFloat(v.precio || 0);
+            const subtotalNum = totalNum / 1.16;
+            const ivaNum = totalNum - subtotalNum;
 
-            document.getElementById('facturaTiendaNombre').innerText = nombreTienda;
-            document.getElementById('facturaTiendaCorreo').innerText = correoTienda;
-            document.getElementById('facturaTiendaTelefono').innerText = telTienda;
+            const numFactura = v.numFactura || `VNT-${(v.id || Math.floor(Math.random() * 900000 + 100000)).toString().slice(-6).toUpperCase()}`;
 
-            const numeroFact = v.idVenta || ("FAC-" + (v.timestamp ? String(v.timestamp).slice(-6) : Math.floor(Math.random() * 900000 + 100000)));
-            document.getElementById('facturaNumero').innerText = `N° ${numeroFact}`;
-            document.getElementById('facturaFecha').innerText = `Fecha: ${v.fecha || new Date().toLocaleString()}`;
-            document.getElementById('facturaTipo').innerText = `Tipo: ${v.tipo || 'Presencial'}`;
+            const infoNombre = document.getElementById('infoNombreTienda').innerText;
+            const nombreTienda = (infoNombre && infoNombre !== 'Cargando tienda...') ? infoNombre : 'TURESPUESTOYA OFICIAL';
+            
+            const infoEmail = document.getElementById('infoCorreoTienda').innerText.replace('📧 ', '');
+            const emailTienda = (infoEmail && infoEmail !== 'Cargando correo...') ? infoEmail : 'josegrexx@gmail.com';
+            
+            const infoTel = document.getElementById('infoTelefonoTienda').innerText.replace('📞 ', '');
+            const telTienda = (infoTel && infoTel !== 'Cargando teléfono...') ? infoTel : '04120000000';
 
-            document.getElementById('facturaComprador').innerText = v.comprador || 'Cliente Mostrador';
-            document.getElementById('facturaTelefonoCliente').innerText = v.telefono || 'Sin teléfono';
-            document.getElementById('facturaNotas').innerText = v.notas || 'Sin notas adicionales';
+            const htmlFactura = `
+                <!-- Encabezado Principal -->
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b-2 border-slate-900 pb-4 gap-4 print:border-black">
+                    <div>
+                        <span class="text-[11px] font-black uppercase tracking-widest text-slate-500 block mb-1">Comprobante Oficial</span>
+                        <h2 class="font-black text-slate-900 text-2xl uppercase tracking-wider">${nombreTienda}</h2>
+                        <div class="text-slate-600 text-xs mt-1 space-y-0.5">
+                            <p>📧 ${emailTienda}</p>
+                            <p>📞 ${telTienda}</p>
+                        </div>
+                    </div>
 
-            const precioNum = parseFloat(v.precio || 0);
-            const subtotal = precioNum / 1.16;
-            const impuesto = precioNum - subtotal;
+                    <div class="text-left md:text-right bg-slate-50 p-4 rounded-xl border border-slate-300 w-full md:w-auto print:bg-white print:border-black">
+                        <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Documento Fiscal</span>
+                        <h3 class="font-black text-slate-900 text-xl uppercase tracking-wide">FACTURA FISCAL</h3>
+                        <p class="font-bold text-amber-600 print:text-black text-base mt-0.5">N° ${numFactura}</p>
+                        <div class="text-slate-600 text-xs mt-1 space-y-0.5">
+                            <p><strong>Fecha:</strong> ${v.fecha || new Date().toLocaleString()}</p>
+                            <p><strong>Tipo de Emisión:</strong> <span class="uppercase font-bold">${v.tipo || 'Venta'}</span></p>
+                        </div>
+                    </div>
+                </div>
 
-            document.getElementById('facturaTablaDetalle').innerHTML = `
-                <tr class="border-b border-slate-800/60 text-slate-300 text-[11px]">
-                    <td class="p-2 uppercase font-bold">${v.repuesto || 'Repuesto'}</td>
-                    <td class="p-2 text-center">1</td>
-                    <td class="p-2 text-right">$${subtotal.toFixed(2)}</td>
-                    <td class="p-2 text-right font-black text-emerald-400">$${subtotal.toFixed(2)}</td>
-                </tr>
+                <!-- Bloque de Datos del Cliente -->
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 print:bg-white print:border-black">
+                    <h4 class="font-black text-slate-900 text-xs uppercase tracking-wider mb-2 border-b border-slate-200 pb-1 print:border-black">Datos del Cliente / Comprador</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs text-slate-800">
+                        <p><strong>Nombre / Razón Social:</strong> <span class="uppercase font-bold">${v.comprador || 'Cliente Mostrador'}</span></p>
+                        <p><strong>Teléfono de Contacto:</strong> <span class="font-bold">${v.telefono || 'N/A'}</span></p>
+                        <p class="col-span-full"><strong>Notas / Observaciones:</strong> <span class="italic text-slate-600 print:text-black">${v.notas || 'Sin observaciones'}</span></p>
+                    </div>
+                </div>
+
+                <!-- Tabla de Detalle de Compra -->
+                <div class="overflow-x-auto my-1">
+                    <table class="w-full text-left border-collapse text-xs md:text-sm">
+                        <thead>
+                            <tr class="bg-slate-900 text-white uppercase text-[11px] tracking-wider print:bg-slate-200 print:text-black border-b-2 border-slate-900 print:border-black">
+                                <th class="py-3 px-4">Repuesto / Descripción</th>
+                                <th class="py-3 px-4 text-center">Cant.</th>
+                                <th class="py-3 px-4 text-right">Precio Unit.</th>
+                                <th class="py-3 px-4 text-right">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-200 print:divide-black">
+                            <tr class="text-slate-900">
+                                <td class="py-4 px-4 font-bold uppercase text-slate-900">${v.repuesto}</td>
+                                <td class="py-4 px-4 text-center font-semibold">1</td>
+                                <td class="py-4 px-4 text-right font-semibold">$${subtotalNum.toFixed(2)}</td>
+                                <td class="py-4 px-4 text-right font-black text-slate-900">$${subtotalNum.toFixed(2)}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Resumen Financiero de la Factura -->
+                <div class="flex flex-col sm:flex-row justify-between items-end pt-2 gap-4 border-t-2 border-slate-900 print:border-black">
+                    <div class="text-[11px] text-slate-500 max-w-sm print:text-black leading-relaxed">
+                        <p class="font-bold text-slate-800 print:text-black">Notas Legales:</p>
+                        <p class="italic">Este documento es emitido como comprobante válido de la transacción procesada en el sistema TurespuestoYa.</p>
+                    </div>
+
+                    <div class="w-full sm:w-72 bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-2 text-xs print:bg-white print:border-black">
+                        <div class="flex justify-between text-slate-700 print:text-black">
+                            <span>Subtotal:</span>
+                            <span class="font-bold">$${subtotalNum.toFixed(2)}</span>
+                        </div>
+                        <div class="flex justify-between text-slate-700 print:text-black">
+                            <span>IVA (16% Impuesto aplicable):</span>
+                            <span class="font-bold">$${ivaNum.toFixed(2)}</span>
+                        </div>
+                        <div class="flex justify-between text-slate-900 font-black text-base pt-2 border-t-2 border-slate-900 print:border-black">
+                            <span>Total General:</span>
+                            <span class="text-emerald-700 print:text-black">$${totalNum.toFixed(2)}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pie de Página Fiscal -->
+                <div class="text-center text-xs font-bold text-slate-700 pt-4 border-t border-slate-200 italic print:border-black print:text-black">
+                    ¡Gracias por su compra en TurespuestoYa! - Documento Fiscal Válido
+                </div>
             `;
 
-            document.getElementById('facturaSubtotal').innerText = `$${subtotal.toFixed(2)}`;
-            document.getElementById('facturaImpuesto').innerText = `$${impuesto.toFixed(2)} (16%)`;
-            document.getElementById('facturaTotal').innerText = `$${precioNum.toFixed(2)}`;
-
+            document.getElementById('contenidoFacturaImprimir').innerHTML = htmlFactura;
             const modal = document.getElementById('modalFacturaFiscal');
             modal.classList.remove('hidden');
             modal.classList.add('flex');
         };
 
-        window.cerrarModalFacturaFiscal = function() {
+        window.cerrarModalFactura = function() {
             const modal = document.getElementById('modalFacturaFiscal');
             modal.classList.add('hidden');
             modal.classList.remove('flex');
-        };
-
-        window.imprimirFacturaFiscal = function() {
-            window.print();
         };
 
         document.getElementById('btnEjecutarCambioPassword').addEventListener('click', () => {
@@ -717,7 +670,36 @@
 
             onValue(ref(db, `ventas/${uid}`), (snapshot) => {
                 ventasGlobalesMemoria = snapshot.val() || {};
-                renderizarHistorialVentas();
+                
+                const gridVentas = document.getElementById('gridVentas');
+                gridVentas.innerHTML = "";
+                const ventasArr = Object.entries(ventasGlobalesMemoria).map(([id, v]) => ({ id, ...v }));
+                ventasArr.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+
+                if (ventasArr.length > 0) {
+                    ventasArr.forEach(v => {
+                        gridVentas.innerHTML += `
+                            <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800 flex justify-between items-center gap-2">
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex items-center gap-2 mb-0.5">
+                                        <span class="text-emerald-400 font-black text-xs">$${v.precio}</span>
+                                        <span class="text-white text-xs font-bold truncate uppercase">${v.repuesto}</span>
+                                    </div>
+                                    <div class="text-[10px] text-slate-400 truncate">👤 ${v.comprador} | ${v.fecha}</div>
+                                </div>
+                                <div class="flex items-center gap-1.5">
+                                    <span class="bg-emerald-500/10 text-emerald-400 text-[9px] px-1.5 py-0.5 rounded font-bold border border-emerald-500/20">${v.tipo}</span>
+                                    <button onclick='abrirFactura(${JSON.stringify(v).replace(/'/g, "&apos;")})' class="bg-amber-500/10 hover:bg-amber-500 text-amber-400 hover:text-slate-950 font-bold px-2 py-1 rounded-lg text-[10px] transition border border-amber-500/30 cursor-pointer flex items-center gap-1">
+                                        🖨️ Factura
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    });
+                } else {
+                    gridVentas.innerHTML = `<p class="text-slate-500 text-xs italic text-center py-2">Aún no hay transacciones registradas.</p>`;
+                }
+
                 renderizarInventarioYResumen();
             });
 
@@ -771,97 +753,18 @@
             });
         }
 
-        window.renderizarHistorialVentas = function() {
-            const gridVentas = document.getElementById('gridVentas');
-            const busquedaFecha = document.getElementById('inputBuscarVentasFecha')?.value.toLowerCase().trim() || '';
-            gridVentas.innerHTML = "";
-            
-            const ventasArr = Object.entries(ventasGlobalesMemoria).map(([id, v]) => ({ id, ...v }));
-            ventasArr.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
-
-            const ventasPorDia = {};
-            ventasArr.forEach(v => {
-                let fechaCompleta = v.fecha || '';
-                let fechaSolo = fechaCompleta.split(',')[0].trim();
-                if (!ventasPorDia[fechaSolo]) {
-                    ventasPorDia[fechaSolo] = { count: 0, totalDolar: 0, items: [] };
-                }
-                ventasPorDia[fechaSolo].count += 1;
-                ventasPorDia[fechaSolo].totalDolar += parseFloat(v.precio || 0);
-                ventasPorDia[fechaSolo].items.push(v);
-            });
-
-            const diasFiltrados = Object.entries(ventasPorDia).filter(([fecha, info]) => {
-                return fecha.toLowerCase().includes(busquedaFecha);
-            });
-
-            if (diasFiltrados.length > 0) {
-                diasFiltrados.forEach(([fecha, info]) => {
-                    gridVentas.innerHTML += `
-                        <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 flex flex-col gap-2">
-                            <div class="flex justify-between items-center border-b border-slate-800 pb-1.5">
-                                <span class="text-amber-400 font-black text-xs">📅 ${fecha}</span>
-                                <div class="flex items-center gap-2 text-[10px]">
-                                    <span class="bg-amber-500/10 text-amber-300 px-2 py-0.5 rounded border border-amber-500/20 font-bold">Ventas: <strong>${info.count}</strong></span>
-                                    <span class="text-emerald-400 font-black">Total: $${info.totalDolar.toFixed(2)}</span>
-                                </div>
-                            </div>
-                            <div class="flex flex-col gap-1.5">
-                                ${info.items.map(v => `
-                                    <div class="bg-slate-900/60 p-2 rounded-lg border border-slate-800/80 flex justify-between items-center gap-2">
-                                        <div class="flex-1 min-w-0">
-                                            <div class="flex items-center gap-2 mb-0.5">
-                                                <span class="text-emerald-400 font-black text-xs">$${v.precio}</span>
-                                                <span class="text-white text-xs font-bold truncate uppercase">${v.repuesto}</span>
-                                                <span class="text-[9px] text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20 font-bold">ID: ${v.idVenta || 'S/N'}</span>
-                                            </div>
-                                            <div class="text-[10px] text-slate-400 truncate">👤 ${v.comprador} \vert{} 📞 ${v.telefono || 'Sin teléfono'}</div>
-                                        </div>
-                                        <div class="flex items-center gap-1.5">
-                                            <button onclick='abrirFacturaFiscal(${JSON.stringify(v).replace(/'/g, "&apos;")})' class="bg-amber-500/20 hover:bg-amber-500 text-amber-400 hover:text-slate-950 font-bold px-2 py-1 rounded text-[10px] transition border border-amber-500/30 cursor-pointer" title="Emitir Factura Fiscal">Factura 📄</button>
-                                            <span class="bg-emerald-500/10 text-emerald-400 text-[9px] px-1.5 py-0.5 rounded font-bold border border-emerald-500/20">${v.tipo}</span>
-                                        </div>
-                                    </div>
-                                `).join('')}
-                            </div>
-                        </div>
-                    `;
-                });
-            } else {
-                gridVentas.innerHTML = `<p class="text-slate-500 text-xs italic text-center py-4">No se encontraron transacciones para esa fecha.</p>`;
-            }
-        };
-
-        document.getElementById('inputBuscarVentasFecha').addEventListener('input', renderizarHistorialVentas);
-
         function renderizarInventarioYResumen() {
             const gridInventario = document.getElementById('gridMisRepuestos');
             const gridResumen = document.getElementById('gridResumenVentasRepuesto');
-            const busquedaInventario = document.getElementById('inputBuscarMiInventario')?.value.toLowerCase().trim() || '';
             
             gridInventario.innerHTML = "";
             gridResumen.innerHTML = "";
 
-            if (modoVistaInventario === 'list') {
-                gridInventario.className = "flex flex-col gap-2";
-            } else {
-                gridInventario.className = "grid grid-cols-1 sm:grid-cols-2 gap-4";
-            }
-
-            const allEntries = Object.entries(inventarioActivoMemoria);
-            document.getElementById('contadorMisRepuestos').innerText = `${allEntries.length} repuestos`;
-
-            const inventarioFiltrado = allEntries.filter(([id, prod]) => {
-                const nombre = prod.nombre ? prod.nombre.toLowerCase() : '';
-                const oem = prod.codigoOem ? prod.codigoOem.toLowerCase() : '';
-                const modeloComp = prod.modeloCompatible ? prod.modeloCompatible.toLowerCase() : '';
-                const categoria = prod.categoria ? prod.categoria.toLowerCase() : '';
-                const vehiculo = prod.vehiculo ? prod.vehiculo.toLowerCase() : '';
-                return nombre.includes(busquedaInventario) || oem.includes(busquedaInventario) || modeloComp.includes(busquedaInventario) || categoria.includes(busquedaInventario) || vehiculo.includes(busquedaInventario);
-            });
+            const keys = Object.keys(inventarioActivoMemoria);
+            document.getElementById('contadorMisRepuestos').innerText = `${keys.length} repuestos`;
 
             const nombresActivos = new Set();
-            allEntries.forEach(([id, prod]) => {
+            Object.values(inventarioActivoMemoria).forEach(prod => {
                 if (prod.nombre) nombresActivos.add(prod.nombre.trim().toUpperCase());
             });
 
@@ -900,19 +803,13 @@
                 gridResumen.innerHTML = `<p class="text-slate-500 text-xs italic p-2">No hay ventas registradas de los repuestos activos.</p>`;
             }
 
-            if (inventarioFiltrado.length > 0) {
-                inventarioFiltrado.forEach(([id, prod]) => {
+            if (keys.length > 0) {
+                Object.entries(inventarioActivoMemoria).forEach(([id, prod]) => {
                     const nombreMayus = prod.nombre ? prod.nombre.trim().toUpperCase() : '';
                     const descVal = parseInt(prod.descuento) || 0;
                     const precioOriginal = parseFloat(prod.precio) || 0;
                     const precioFinal = descVal > 0 ? precioOriginal * (1 - descVal / 100) : precioOriginal;
                     const stockActual = parseInt(prod.stock) || 0;
-
-                    const vehProdLabel = prod.vehiculo || (prod.categoria === 'Moto' ? 'Moto' : 'Carro');
-                    const catProdLabel = prod.categoria || 'Accesorios';
-                    
-                    const oemBadge = prod.codigoOem ? `<div class="bg-slate-950 border border-slate-800 p-2 rounded-xl text-[10px] flex items-center justify-between mb-1.5 shadow-inner"><span class="text-slate-400 font-bold">🔑 OEM:</span><span class="text-amber-400 font-black uppercase tracking-wider">${prod.codigoOem.toUpperCase()}</span></div>` : '';
-                    const modeloCompBadge = prod.modeloCompatible ? `<div class="bg-slate-950 border border-slate-800 p-2 rounded-xl text-[10px] flex items-center justify-between mb-2 shadow-inner"><span class="text-slate-400 font-bold">🚗 Modelo:</span><span class="text-blue-400 font-black uppercase tracking-wider">${prod.modeloCompatible}</span></div>` : '';
 
                     const alertaStockBajo = stockActual <= 5 
                         ? `<div class="bg-red-500/10 border border-red-500/30 text-red-400 text-[10px] font-black px-2 py-1 rounded-lg text-center uppercase tracking-wider animate-pulse mb-2">⚠️ ¡Últimas disponibles! (${stockActual})</div>` 
@@ -922,92 +819,51 @@
                     const unidadesVendidas = ventasDeEsteProd.length;
                     const ingresosItem = ventasDeEsteProd.reduce((acc, v) => acc + parseFloat(v.precio || 0), 0);
 
-                    if (modoVistaInventario === 'list') {
-                        let imgMini = prod.imagenUrl 
-                            ? `<div class="w-12 h-12 bg-slate-900 rounded-lg overflow-hidden border border-slate-800 flex items-center justify-center p-1 shrink-0"><img src="${prod.imagenUrl}" class="max-w-full max-h-full object-contain"></div>` 
-                            : `<div class="w-12 h-12 bg-slate-900 rounded-lg flex items-center justify-center text-slate-600 text-sm shrink-0 border border-slate-800">📷</div>`;
+                    let imgCard = prod.imagenUrl 
+                        ? `<div class="w-full h-24 bg-slate-950 rounded-xl overflow-hidden mb-2 border border-slate-800 flex items-center justify-center p-1"><img src="${prod.imagenUrl}" class="max-w-full max-h-full object-contain"></div>` 
+                        : `<div class="w-full h-24 bg-slate-950 rounded-xl flex items-center justify-center text-slate-600 text-xl mb-2 border border-slate-800">📷</div>`;
 
-                        gridInventario.innerHTML += `
-                            <div class="bg-slate-900 border border-slate-800 p-3 rounded-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 shadow-md">
-                                <div class="flex items-center gap-3 w-full sm:w-auto min-w-0">
-                                    ${imgMini}
-                                    <div class="min-w-0">
-                                        <div class="flex items-center gap-1.5 flex-wrap mb-1">
-                                            <span class="text-[9px] uppercase font-bold text-amber-500 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20">${vehProdLabel}</span>
-                                            <span class="text-[9px] uppercase font-bold text-slate-300 bg-slate-950 px-1.5 py-0.5 rounded border border-slate-800">${catProdLabel}</span>
-                                            ${prod.codigoOem ? `<span class="bg-slate-950 text-amber-400 font-bold px-2 py-1 rounded-lg border border-slate-800 text-[9px] flex items-center gap-1 shadow-inner">🔑 OEM: <strong>${prod.codigoOem.toUpperCase()}</strong></span>` : ''}
-                                        </div>
-                                        <h4 class="text-xs font-black text-white uppercase truncate" title="${nombreMayus}">${nombreMayus}</h4>
-                                        <div class="text-[10px] text-slate-400 flex items-center gap-3 mt-1 flex-wrap">
-                                            <span>Precio: <strong class="text-emerald-400">$${precioFinal.toFixed(2)}</strong></span>
-                                            <span>Stock: <strong class="text-slate-200">${stockActual}</strong></span>
-                                            <span class="bg-amber-500/15 text-amber-300 px-2 py-0.5 rounded-lg border border-amber-500/30 font-bold flex items-center gap-1">
-                                                🛍️ Vendidas: <strong class="text-amber-200">${unidadesVendidas}</strong> <span class="text-emerald-400">($${ingresosItem.toFixed(2)})</span>
-                                            </span>
-                                        </div>
+                    gridInventario.innerHTML += `
+                        <div class="bg-slate-900 border border-slate-800 p-3.5 rounded-2xl flex flex-col justify-between shadow-lg gap-3">
+                            <div>
+                                ${imgCard}
+                                <span class="text-[9px] uppercase font-bold text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">${prod.categoria}</span>
+                                <h4 class="text-xs font-black text-white uppercase mt-1 mb-1 truncate" title="${nombreMayus}">${nombreMayus}</h4>
+                                ${alertaStockBajo}
+                                <div class="flex items-center justify-between mb-2">
+                                    <div class="flex items-center gap-1">
+                                        <span class="text-emerald-400 font-black text-sm">$${precioFinal.toFixed(2)}</span>
+                                        ${descVal > 0 ? `<span class="text-red-400 text-[10px] font-bold">(-${descVal}%)</span>` : ''}
                                     </div>
+                                    <span class="text-[10px] text-slate-300 bg-slate-950 px-1.5 py-0.5 rounded border border-slate-800">Stock: <strong>${stockActual}</strong></span>
                                 </div>
-                                <div class="flex items-center gap-1.5 w-full sm:w-auto justify-end border-t sm:border-t-0 pt-2 sm:pt-0 border-slate-800">
-                                    <button onclick='prepararEdicion("${id}", ${JSON.stringify(prod).replace(/'/g, "&apos;")})' class="bg-slate-800 hover:bg-slate-700 text-amber-400 font-bold px-3 py-1.5 rounded-lg text-[10px] transition border border-slate-700 cursor-pointer">Editar ✏️</button>
-                                    <button onclick='abrirModalVentaFisica("${id}", ${JSON.stringify(prod).replace(/'/g, "&apos;")})' class="bg-emerald-600/20 hover:bg-emerald-600 text-emerald-400 hover:text-white font-bold px-3 py-1.5 rounded-lg text-[10px] transition border border-emerald-500/30 cursor-pointer">Venta 🛒</button>
-                                    <button onclick='eliminarRepuesto("${id}")' class="bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white font-bold px-2.5 py-1.5 rounded-lg text-[10px] transition border border-red-500/30 cursor-pointer">🗑️</button>
+                                <div class="bg-slate-950/80 border border-slate-800 p-2.5 rounded-xl text-[11px] flex flex-col gap-1">
+                                    <div class="flex justify-between text-slate-300">
+                                        <span>Unidades vendidas:</span>
+                                        <strong class="text-amber-400">${unidadesVendidas}</strong>
+                                    </div>
+                                    <div class="flex justify-between text-slate-300">
+                                        <span>Ingresos por este ítem:</span>
+                                        <strong class="text-emerald-400">$${ingresosItem.toFixed(2)}</strong>
+                                    </div>
                                 </div>
                             </div>
-                        `;
-                    } else {
-                        let imgCard = prod.imagenUrl 
-                            ? `<div class="w-full h-24 bg-slate-950 rounded-xl overflow-hidden mb-2 border border-slate-800 flex items-center justify-center p-1"><img src="${prod.imagenUrl}" class="max-w-full max-h-full object-contain"></div>` 
-                            : `<div class="w-full h-24 bg-slate-950 rounded-xl flex items-center justify-center text-slate-600 text-xl mb-2 border border-slate-800">📷</div>`;
-
-                        gridInventario.innerHTML += `
-                            <div class="bg-slate-900 border border-slate-800 p-3.5 rounded-2xl flex flex-col justify-between shadow-lg gap-3">
-                                <div>
-                                    ${imgCard}
-                                    <div class="flex items-center gap-1 mb-1.5 flex-wrap">
-                                        <span class="text-[9px] uppercase font-bold text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">${vehProdLabel}</span>
-                                        <span class="text-[9px] uppercase font-bold text-slate-300 bg-slate-950 px-2 py-0.5 rounded border border-slate-800">${catProdLabel}</span>
-                                    </div>
-                                    ${oemBadge}
-                                    ${modeloCompBadge}
-                                    <h4 class="text-xs font-black text-white uppercase mt-1 mb-1 truncate" title="${nombreMayus}">${nombreMayus}</h4>
-                                    ${alertaStockBajo}
-                                    <div class="flex items-center justify-between mb-2">
-                                        <div class="flex items-center gap-1">
-                                            <span class="text-emerald-400 font-black text-sm">$${precioFinal.toFixed(2)}</span>
-                                            ${descVal > 0 ? `<span class="text-red-400 text-[10px] font-bold">(-${descVal}%)</span>` : ''}
-                                        </div>
-                                        <span class="text-[10px] text-slate-300 bg-slate-950 px-1.5 py-0.5 rounded border border-slate-800">Stock: <strong>${stockActual}</strong></span>
-                                    </div>
-                                    <div class="bg-amber-500/10 border border-amber-500/30 p-2.5 rounded-xl text-[11px] flex flex-col gap-1 shadow-inner">
-                                        <div class="flex justify-between items-center text-slate-200">
-                                            <span class="font-bold text-amber-300 flex items-center gap-1">🛍️ Unidades Vendidas:</span>
-                                            <span class="bg-amber-500 text-slate-950 font-black px-2 py-0.5 rounded-full text-xs shadow">${unidadesVendidas}</span>
-                                        </div>
-                                        <div class="flex justify-between items-center text-slate-300 border-t border-amber-500/20 pt-1 mt-0.5">
-                                            <span class="text-[10px] text-slate-400 uppercase">Ingresos Totales:</span>
-                                            <strong class="text-emerald-400 font-black">$${ingresosItem.toFixed(2)}</strong>
-                                        </div>
-                                    </div>
+                            <div class="flex flex-col gap-1.5 pt-2 border-t border-slate-800">
+                                <div class="flex gap-1.5">
+                                    <button onclick='prepararEdicion("${id}", ${JSON.stringify(prod).replace(/'/g, "&apos;")})' class="bg-slate-800 hover:bg-slate-700 text-amber-400 font-bold py-1.5 rounded-lg text-[10px] transition border border-slate-700 cursor-pointer flex-1">Editar ✏️</button>
+                                    <button onclick='eliminarRepuesto("${id}")' class="bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-slate-950 font-bold py-1.5 px-2 rounded-lg text-[10px] transition border border-red-500/30 cursor-pointer">🗑️</button>
                                 </div>
-                                <div class="flex flex-col gap-1.5 pt-2 border-t border-slate-800">
-                                    <div class="flex gap-1.5">
-                                        <button onclick='prepararEdicion("${id}", ${JSON.stringify(prod).replace(/'/g, "&apos;")})' class="bg-slate-800 hover:bg-slate-700 text-amber-400 font-bold py-1.5 rounded-lg text-[10px] transition border border-slate-700 cursor-pointer flex-1">Editar ✏️</button>
-                                        <button onclick='eliminarRepuesto("${id}")' class="bg-red-500/10 hover:bg-red-500 text-slate-950 font-bold py-1.5 px-2 rounded-lg text-[10px] transition border border-red-500/30 cursor-pointer">🗑️</button>
-                                    </div>
-                                    <button onclick='abrirModalVentaFisica("${id}", ${JSON.stringify(prod).replace(/'/g, "&apos;")})' class="bg-emerald-600/20 hover:bg-emerald-600 text-emerald-400 hover:text-white font-bold py-2 rounded-lg text-[10px] transition border border-emerald-500/30 cursor-pointer text-center">
-                                        Registrar Venta Local 🛒
-                                    </button>
-                                </div>
+                                <button onclick='abrirModalVentaFisica("${id}", ${JSON.stringify(prod).replace(/'/g, "&apos;")})' class="bg-emerald-600/20 hover:bg-emerald-600 text-emerald-400 hover:text-white font-bold py-2 rounded-lg text-[10px] transition border border-emerald-500/30 cursor-pointer text-center">
+                                    Registrar Venta Local 🛒
+                                </button>
                             </div>
-                        `;
-                    }
+                        </div>
+                    `;
                 });
             } else {
-                gridInventario.innerHTML = `<p class="text-slate-500 text-xs italic col-span-full text-center py-10">No se encontraron repuestos en tu inventario con ese criterio de búsqueda.</p>`;
+                gridInventario.innerHTML = `<p class="text-slate-500 text-xs italic col-span-full text-center py-10">No tienes repuestos publicados aún.</p>`;
             }
         }
-
-        document.getElementById('inputBuscarMiInventario').addEventListener('input', renderizarInventarioYResumen);
 
         window.procesarVentaDelivery = function(idPedido, ped) {
             if (!confirm(`¿Confirmar venta por delivery del repuesto "${ped.repuesto}" a ${ped.cliente}?`)) return;
@@ -1031,8 +887,7 @@
                 notas: 'Venta confirmada vía Delivery',
                 fecha: new Date().toLocaleString(),
                 timestamp: Date.now(),
-                tipo: 'Delivery',
-                idVenta: "VNT-" + Math.floor(Math.random() * 900000 + 100000) // ID único de venta
+                tipo: 'Delivery'
             };
 
             const promesas = [
@@ -1048,6 +903,7 @@
                 .then(() => {
                     reproducirSonidoAlerta();
                     alert("¡Venta por delivery registrada con éxito!");
+                    abrirFactura(datosVenta);
                 })
                 .catch(err => alert("Error: " + err.message));
         };
@@ -1109,8 +965,7 @@
                 notas: notas || 'Venta presencial en local',
                 fecha: new Date().toLocaleString(),
                 timestamp: Date.now(),
-                tipo: 'Presencial',
-                idVenta: "VNT-" + Math.floor(Math.random() * 900000 + 100000) // ID único de venta
+                tipo: 'Presencial'
             };
 
             Promise.all([
@@ -1120,6 +975,7 @@
                 reproducirSonidoAlerta();
                 alert("¡Venta registrada con éxito y stock actualizado!");
                 cerrarModalVenta();
+                abrirFactura(datosVenta);
             }).catch(err => alert("Error: " + err.message));
         });
 
@@ -1128,17 +984,7 @@
             if (!uidTiendaActual) return;
 
             const editId = document.getElementById('editIdProd').value;
-            
-            const imagenFinal = imagenBase64Actual || (editId ? window._tempImgUrlAnterior || "" : "");
-            if (!imagenFinal) {
-                alert("¡Es obligatorio subir una foto para el repuesto!");
-                return;
-            }
-
             const nombre = document.getElementById('inputNombre').value.trim();
-            const codigoOem = document.getElementById('inputOem').value.trim().toUpperCase();
-            const modeloCompatible = document.getElementById('inputModeloCompatible').value.trim();
-            const vehiculo = document.getElementById('inputVehiculo').value;
             const categoria = document.getElementById('inputCategoria').value;
             const stock = document.getElementById('inputStock').value;
             const precio = document.getElementById('inputPrecio').value;
@@ -1148,16 +994,13 @@
 
             const datosRepuesto = {
                 nombre,
-                codigoOem,
-                modeloCompatible,
-                vehiculo,
                 categoria,
                 stock,
                 precio,
                 descuento,
                 ofreceDelivery,
                 retiroTienda,
-                imagenUrl: imagenFinal
+                imagenUrl: imagenBase64Actual || (editId ? window._tempImgUrlAnterior || "" : "")
             };
 
             const dbRef = ref(db, `inventarios/${uidTiendaActual}`);
@@ -1182,10 +1025,7 @@
         window.prepararEdicion = function(id, prod) {
             document.getElementById('editIdProd').value = id;
             document.getElementById('inputNombre').value = prod.nombre || '';
-            document.getElementById('inputOem').value = prod.codigoOem || '';
-            document.getElementById('inputModeloCompatible').value = prod.modeloCompatible || '';
-            document.getElementById('inputVehiculo').value = prod.vehiculo || (prod.categoria === 'Moto' ? 'Moto' : 'Carro');
-            document.getElementById('inputCategoria').value = ['Carro', 'Moto'].includes(prod.categoria) ? 'Motor' : (prod.categoria || 'Motor');
+            document.getElementById('inputCategoria').value = prod.categoria || 'Motor';
             document.getElementById('inputStock').value = prod.stock || '';
             document.getElementById('inputPrecio').value = prod.precio || '';
             document.getElementById('inputDescuento').value = prod.descuento || '';

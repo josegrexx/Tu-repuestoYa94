@@ -1,16 +1,33 @@
 <!-- =============================================================
-     ARCHIVO: panel.html (Panel de Tienda - Versión 4.7 con Factura Fiscal Tamaño Hoja Amplia)
+     ARCHIVO: panel.html (Panel de Tienda - Versión 8.0 con Exportación a Excel y PDF)
      ============================================================= -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel de Tienda v4.7 - TurespuestoYa</title>
+    <title>Panel de Tienda v6.11 - TurespuestoYa</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    
     <style>
+        /* Estilos con Fuente Arial Exacta para el Reloj y Fecha */
+        .fuente-reloj {
+            font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: 1.5px;
+        }
+        .fuente-fecha {
+            font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
+            letter-spacing: 0.8px;
+        }
+
+        /* Optimización Estricta para Impresión en 1 Sola Hoja (Factura) */
         @media print {
-            body > *:not(#modalFacturaFiscal) {
+            @page {
+                size: portrait;
+                margin: 8mm;
+            }
+            body > *:not(#modalFacturaFiscal):not(#modalReportePdfPrint) {
                 display: none !important;
             }
             #modalFacturaFiscal {
@@ -24,24 +41,33 @@
                 display: block !important;
                 padding: 0 !important;
                 margin: 0 !important;
+                box-shadow: none !important;
+                border: none !important;
             }
-            #modalFacturaFiscal .print\:hidden {
-                display: none !important;
-            }
-            #contenidoFacturaImprimir {
-                background: white !important;
-                color: black !important;
-                border: 2px solid #000 !important;
+            #modalFacturaFiscal > div {
+                box-shadow: none !important;
+                border: none !important;
                 width: 100% !important;
                 max-width: 100% !important;
-                box-shadow: none !important;
-                padding: 35px !important;
-                font-size: 13px !important;
-                border-radius: 0 !important;
-            }
-            #contenidoFacturaImprimir * {
+                max-height: none !important;
+                background: white !important;
                 color: black !important;
-                border-color: #000 !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+            #contenidoFacturaFiscalPrint {
+                background: white !important;
+                color: black !important;
+                border: 1px dashed #333 !important;
+                padding: 16px !important;
+                font-size: 11px !important;
+            }
+            #contenidoFacturaFiscalPrint * {
+                color: black !important;
+            }
+            #btnCerrarModalFactura, 
+            #btnAccionImprimirFactura {
+                display: none !important;
             }
         }
     </style>
@@ -49,29 +75,34 @@
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans">
 
     <!-- Header del Panel -->
-    <header class="bg-slate-900 border-b border-slate-800 p-4 sticky top-0 z-50 shadow-md">
-        <div class="max-w-7xl mx-auto flex flex-wrap justify-between items-center gap-4">
-            <div class="flex items-center gap-2">
-                <span class="text-2xl">⚡</span>
-                <h1 class="text-xl font-black text-amber-500 tracking-wide uppercase">Panel de Tienda <span class="text-xs bg-amber-500/10 text-amber-400 px-2 py-0.5 rounded-full border border-amber-500/30">v4.7</span></h1>
+    <header class="bg-slate-900 border-b border-slate-800 p-3 sm:p-4 sticky top-0 z-50 shadow-md">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-3">
+            <div class="flex items-center justify-between w-full sm:w-auto">
+                <div class="flex items-center gap-2">
+                    <span class="text-2xl">⚡</span>
+                    <h1 class="text-base sm:text-xl font-black text-amber-500 tracking-wide uppercase">Panel de Tienda <span class="text-[10px] bg-amber-500/10 text-amber-400 px-2 py-0.5 rounded-full border border-amber-500/30">v6.11</span></h1>
+                </div>
             </div>
             
-            <div class="flex items-center gap-3 flex-wrap">
-                <!-- Botón Principal: Notificaciones con Contador -->
-                <button onclick="enfocarPedidos()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold px-3 py-1.5 rounded-xl text-xs transition border border-slate-700 cursor-pointer flex items-center gap-2 relative shadow-sm">
+            <div class="flex items-center gap-2 flex-wrap justify-center sm:justify-end w-full sm:w-auto">
+                <!-- Contenedor del botón "Adm" exclusivo para josegrexx@gmail.com -->
+                <div id="contenedorBotonAdmExclusivoPanel"></div>
+
+                <button onclick="enfocarPedidos()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold px-3 py-1.5 rounded-xl text-xs transition border border-slate-700 cursor-pointer flex items-center gap-1.5 relative shadow-sm">
                     <span>🔔 Notificaciones</span>
                     <span id="badgeNotifHeader" class="bg-amber-500 text-slate-950 text-[10px] px-1.5 py-0.2 rounded-full font-black">0</span>
                 </button>
 
-                <!-- Menú Desplegable Unificado ("Opciones") -->
                 <div class="relative">
                     <button onclick="toggleMenuOpciones()" class="bg-slate-800 hover:bg-slate-700 text-amber-400 font-bold px-3 py-1.5 rounded-xl text-xs transition border border-slate-700 cursor-pointer flex items-center gap-1.5 shadow-sm">
                         <span>⚙️ Opciones ▾</span>
                     </button>
                     
-                    <!-- Contenido del Menú Desplegable -->
-                    <div id="menuDesplegableOpciones" class="absolute right-0 mt-2 w-48 bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl hidden flex-col py-1.5 z-50">
-                        <button onclick="abrirModalPassword(); cerrarMenuOpciones();" class="text-left px-4 py-2 text-xs text-slate-300 hover:bg-slate-800 hover:text-amber-400 font-bold transition flex items-center gap-2 cursor-pointer">
+                    <div id="menuDesplegableOpciones" class="absolute right-0 mt-2 w-56 bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl hidden flex-col py-1.5 z-50">
+                        <button onclick="abrirModalRif(); cerrarMenuOpciones();" class="text-left px-4 py-2 text-xs text-slate-300 hover:bg-slate-800 hover:text-amber-400 font-bold transition flex items-center gap-2 cursor-pointer">
+                            🏢 Agregar RIF Comercial
+                        </button>
+                        <button onclick="abrirModalPassword(); cerrarMenuOpciones();" class="text-left px-4 py-2 text-xs text-slate-300 hover:bg-slate-800 hover:text-amber-400 font-bold transition flex items-center gap-2 cursor-pointer border-t border-slate-800/60">
                             🔑 Cambiar Contraseña
                         </button>
                         <button id="btnToggleSonidoMenu" onclick="alternarSonido();" class="text-left px-4 py-2 text-xs text-slate-300 hover:bg-slate-800 hover:text-amber-400 font-bold transition flex items-center gap-2 cursor-pointer border-t border-slate-800/60">
@@ -87,26 +118,50 @@
     </header>
 
     <!-- Contenido Principal -->
-    <main class="max-w-7xl mx-auto p-4 flex-grow w-full mt-4 flex flex-col gap-6">
+    <main class="max-w-7xl mx-auto p-3 sm:p-4 flex-grow w-full mt-2 sm:mt-4 flex flex-col gap-4 sm:gap-6">
         
-        <!-- Tarjeta de Información de la Tienda -->
-        <section class="bg-slate-900 border border-slate-800 p-4 rounded-2xl shadow-md flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-amber-500/10 border border-amber-500/30 rounded-xl flex items-center justify-center text-amber-400 text-lg font-black">
+        <!-- Banner Dashboard Profesional de la Tienda -->
+        <section class="bg-gradient-to-r from-slate-900 via-slate-900/95 to-slate-950 border border-slate-800 p-4 sm:p-6 rounded-3xl shadow-2xl flex flex-col lg:flex-row justify-between items-stretch lg:items-center gap-5 relative overflow-hidden">
+            <div class="absolute -right-12 -bottom-12 w-56 h-56 bg-amber-500/5 rounded-full blur-3xl pointer-events-none"></div>
+
+            <div class="flex items-center gap-4 z-10">
+                <div class="w-14 h-14 bg-slate-950 border border-amber-500/30 rounded-2xl flex items-center justify-center text-amber-400 text-3xl font-black shrink-0 shadow-lg relative">
                     🏪
+                    <span class="absolute -top-1 -right-1 flex h-3.5 w-3.5">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-3.5 w-3.5 bg-emerald-500"></span>
+                    </span>
                 </div>
-                <div>
-                    <h2 id="infoNombreTienda" class="text-sm font-black text-white uppercase tracking-wider">Cargando tienda...</h2>
-                    <div class="flex flex-wrap items-center gap-3 text-xs text-slate-400 mt-0.5">
-                        <span id="infoCorreoTienda">📧 Cargando correo...</span>
-                        <span>•</span>
-                        <span id="infoTelefonoTienda">📞 Cargando teléfono...</span>
+                
+                <div class="min-w-0 flex flex-col gap-1.5">
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <span class="text-[9px] uppercase font-black text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20 tracking-widest flex items-center gap-1.5">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Sistema Activo
+                        </span>
+                        <span class="text-[9px] uppercase font-black text-amber-400 bg-amber-500/10 px-2.5 py-0.5 rounded-full border border-amber-500/20 tracking-widest">
+                            Punto de Venta Local
+                        </span>
+                    </div>
+
+                    <h2 id="infoNombreTienda" class="text-base sm:text-xl font-black text-white uppercase tracking-wide truncate flex items-center gap-1.5">Cargando tienda...</h2>
+
+                    <div class="flex flex-wrap items-center gap-2 text-xs text-slate-400">
+                        <span id="infoCorreoTienda" class="bg-slate-950/80 px-3 py-1 rounded-xl border border-slate-800/80 text-slate-300 font-bold truncate">📧 Cargando correo...</span>
+                        <span id="infoTelefonoTienda" class="bg-slate-950/80 px-3 py-1 rounded-xl border border-slate-800/80 text-slate-300 font-bold truncate">📞 Cargando teléfono...</span>
+                        <span id="infoRifTienda" class="bg-slate-950/80 px-3 py-1 rounded-xl border border-slate-800/80 text-amber-400 font-bold truncate hidden">🏢 RIF: --</span>
                     </div>
                 </div>
             </div>
-            <div class="bg-slate-950 border border-slate-800 px-3 py-2 rounded-xl text-right w-full md:w-auto">
-                <span id="infoRelojHora" class="text-xs font-black text-amber-400 block">--:--:--</span>
-                <span id="infoRelojFecha" class="text-[10px] text-slate-400 uppercase">Cargando fecha...</span>
+
+            <!-- Terminal de Reloj y Fecha (Fuente Arial) -->
+            <div class="bg-slate-950/90 border border-amber-500/30 px-6 py-3.5 rounded-2xl text-left lg:text-right w-full lg:w-auto shadow-inner flex flex-col justify-center items-start lg:items-end z-10 backdrop-blur-md">
+                <div class="text-[9px] font-black text-amber-500/90 uppercase tracking-widest mb-0.5 flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span> Terminal Sync
+                </div>
+                <div class="flex items-center gap-2">
+                    <span id="infoRelojHora" class="text-2xl sm:text-3xl font-bold text-amber-400 fuente-reloj drop-shadow-[0_0_10px_rgba(245,158,11,0.3)]">--:--:--</span>
+                </div>
+                <span id="infoRelojFecha" class="text-xs font-bold text-slate-300 uppercase fuente-fecha mt-0.5 block">Cargando fecha...</span>
             </div>
         </section>
 
@@ -114,8 +169,8 @@
         <div id="contenedorAlertaAdmin" class="w-full hidden"></div>
 
         <div class="flex flex-col lg:flex-row gap-6">
-            <!-- Columna Izquierda: Formulario con Mini Ventana de Previsualización -->
-            <section id="seccionFormulario" class="w-full lg:w-1/3 bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl h-fit sticky top-24">
+            <!-- Columna Izquierda: Formulario -->
+            <section id="seccionFormulario" class="w-full lg:w-1/3 bg-slate-900 border border-slate-800 p-4 sm:p-6 rounded-2xl shadow-xl h-fit lg:sticky lg:top-24">
                 <h2 id="tituloFormRepuesto" class="text-base font-black text-white mb-4 flex items-center gap-2 border-b border-slate-800 pb-3">
                     ➕ Agregar Nuevo Repuesto
                 </h2>
@@ -130,17 +185,33 @@
 
                     <div class="grid grid-cols-2 gap-3">
                         <div>
-                            <label class="text-xs text-slate-400 font-bold mb-1 block">Categoría</label>
+                            <label class="text-xs text-slate-400 font-bold mb-1 block">Código OEM</label>
+                            <input type="text" id="inputOem" placeholder="Ej. 0K01A-34-710" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-slate-100 text-xs focus:border-amber-500 focus:outline-none uppercase">
+                        </div>
+                        <div>
+                            <label class="text-xs text-slate-400 font-bold mb-1 block">Modelo Compatible</label>
+                            <input type="text" id="inputModeloCompatible" placeholder="Ej. Sportage 2012" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-slate-100 text-xs focus:border-amber-500 focus:outline-none">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="text-xs text-slate-400 font-bold mb-1 block">Vehículo</label>
+                            <select id="inputVehiculo" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-slate-100 text-xs focus:border-amber-500 focus:outline-none cursor-pointer">
+                                <option value="Carro">Carro 🚗</option>
+                                <option value="Moto">Moto 🏍</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-xs text-slate-400 font-bold mb-1 block">Sistema / Parte</label>
                             <select id="inputCategoria" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-slate-100 text-xs focus:border-amber-500 focus:outline-none cursor-pointer">
                                 <option value="Motor">Motor</option>
                                 <option value="Frenos">Frenos</option>
                                 <option value="Suspensión">Suspensión</option>
                                 <option value="Eléctrico">Eléctrico</option>
+                                <option value="Lubricantes">Lubricantes</option>
+                                <option value="Accesorios">Accesorios</option>
                             </select>
-                        </div>
-                        <div>
-                            <label class="text-xs text-slate-400 font-bold mb-1 block">Stock Disponible</label>
-                            <input type="number" id="inputStock" placeholder="Ej. 5" min="1" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-slate-100 text-xs focus:border-amber-500 focus:outline-none">
                         </div>
                     </div>
 
@@ -155,8 +226,15 @@
                         </div>
                     </div>
 
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="text-xs text-slate-400 font-bold mb-1 block">Stock Disponible</label>
+                            <input type="number" id="inputStock" placeholder="Ej. 5" min="0" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-slate-100 text-xs focus:border-amber-500 focus:outline-none">
+                        </div>
+                    </div>
+
                     <div>
-                        <label class="text-xs text-slate-400 font-bold mb-1 block">Foto del Repuesto (Archivo)</label>
+                        <label class="text-xs text-slate-400 font-bold mb-1 block">Foto del Repuesto (Obligatoria 📸)</label>
                         <input type="file" id="inputArchivoFoto" accept="image/*" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-300 text-xs focus:border-amber-500 focus:outline-none file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-amber-500 file:text-slate-950 hover:file:bg-amber-400 cursor-pointer mb-3">
                         
                         <div class="bg-slate-950 border border-slate-800 rounded-xl p-3 flex flex-col items-center gap-2">
@@ -214,19 +292,52 @@
                     </div>
                 </div>
 
+                <!-- Historial Global de Transacciones con Exportación a Excel y PDF -->
                 <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl shadow-md">
-                    <div class="flex justify-between items-center border-b border-slate-800 pb-3 mb-3">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-800 pb-3 mb-3 gap-3">
                         <h3 class="text-sm font-black text-white uppercase tracking-wider">Historial Global de Transacciones</h3>
+                        <div class="flex items-center gap-2 w-full sm:w-auto flex-wrap sm:flex-nowrap">
+                            <input type="text" id="inputBuscarVentasFecha" placeholder="Buscar por fecha (Ej. 24/9/2026)..." class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-1.5 text-slate-100 text-xs focus:border-amber-500 focus:outline-none w-full sm:w-48">
+                            <div class="flex items-center gap-1.5 w-full sm:w-auto">
+                                <button onclick="exportarVentasExcel()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-3 py-1.5 rounded-xl text-xs transition border border-emerald-500/30 cursor-pointer flex items-center gap-1 shrink-0 shadow-sm flex-1 sm:flex-none justify-center" title="Exportar a Excel">
+                                    <span>📊 Excel</span>
+                                </button>
+                                <button onclick="exportarVentasPdf()" class="bg-rose-600 hover:bg-rose-500 text-white font-bold px-3 py-1.5 rounded-xl text-xs transition border border-rose-500/30 cursor-pointer flex items-center gap-1 shrink-0 shadow-sm flex-1 sm:flex-none justify-center" title="Exportar o Imprimir Reporte en PDF">
+                                    <span>📄 PDF</span>
+                                </button>
+                            </div>
+                        </div>
                     </div>
-                    <div id="gridVentas" class="flex flex-col gap-2 max-h-48 overflow-y-auto pr-1">
+                    <div id="gridVentas" class="flex flex-col gap-3 max-h-64 overflow-y-auto pr-1">
                         <p class="text-slate-500 text-xs italic text-center py-4">Aún no hay transacciones registradas.</p>
                     </div>
                 </div>
 
                 <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl shadow-md">
-                    <div class="flex justify-between items-center border-b border-slate-800 pb-3 mb-4">
-                        <h3 class="text-sm font-black text-white uppercase tracking-wider">Mi Inventario Publicado</h3>
-                        <span id="contadorMisRepuestos" class="bg-amber-500/10 text-amber-400 font-bold px-3 py-1 rounded-xl text-xs border border-amber-500/20">0 repuestos</span>
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-800 pb-3 mb-4 gap-3">
+                        <div class="flex items-center gap-3 flex-wrap">
+                            <h3 class="text-sm font-black text-white uppercase tracking-wider">Mi Inventario Publicado</h3>
+                            
+                            <!-- Pestañas de Filtro: Activos / Archivados -->
+                            <div class="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800">
+                                <button onclick="cambiarFiltroArchivo(false)" id="btnTabActivos" class="px-2.5 py-1 rounded-lg text-xs font-bold transition bg-emerald-500 text-slate-950 cursor-pointer flex items-center gap-1">
+                                    🟢 Activos <span id="cantActivosBadge" class="bg-slate-950/20 px-1.5 rounded-full text-[10px]">0</span>
+                                </button>
+                                <button onclick="cambiarFiltroArchivo(true)" id="btnTabArchivados" class="px-2.5 py-1 rounded-lg text-xs font-bold transition text-slate-400 hover:text-white cursor-pointer flex items-center gap-1">
+                                    📦 Archivados <span id="cantArchivadosBadge" class="bg-slate-800 px-1.5 rounded-full text-[10px]">0</span>
+                                </button>
+                            </div>
+
+                            <!-- Selector de Vista: Tarjetas / Lista -->
+                            <div class="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800">
+                                <button onclick="cambiarVistaInventario('grid')" id="btnVistaGrid" class="px-2.5 py-1 rounded-lg text-xs font-bold transition bg-amber-500 text-slate-950 cursor-pointer">🖼️ Tarjetas</button>
+                                <button onclick="cambiarVistaInventario('list')" id="btnVistaList" class="px-2.5 py-1 rounded-lg text-xs font-bold transition text-slate-400 hover:text-white cursor-pointer">📄 Lista</button>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 w-full sm:w-auto">
+                            <input type="text" id="inputBuscarMiInventario" placeholder="Buscar en mi inventario..." class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-1.5 text-slate-100 text-xs focus:border-amber-500 focus:outline-none w-full sm:w-48">
+                            <span id="contadorMisRepuestos" class="bg-amber-500/10 text-amber-400 font-bold px-3 py-1 rounded-xl text-xs border border-amber-500/20 whitespace-nowrap">0 repuestos</span>
+                        </div>
                     </div>
 
                     <div id="gridMisRepuestos" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -237,46 +348,193 @@
         </div>
     </main>
 
-    <!-- Modal Venta Física -->
-    <div id="modalVentaFisica" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden justify-center items-center p-4 z-50">
-        <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl max-w-md w-full flex flex-col gap-4 shadow-2xl">
-            <div class="flex justify-between items-start">
-                <div>
-                    <span class="text-[10px] uppercase font-bold text-amber-500 tracking-wider">Punto de Venta Local</span>
-                    <h3 id="modalVentaTituloProd" class="text-lg font-black text-white uppercase">Registrar Venta Presencial</h3>
+    <!-- Modal Venta Física con Dos Opciones de Finalización -->
+    <div id="modalVentaFisica" class="fixed inset-0 bg-black/85 backdrop-blur-md hidden justify-center items-center p-3 z-50">
+        <div class="bg-slate-900 border-2 border-amber-500/40 p-3.5 sm:p-4 rounded-2xl max-w-sm w-full flex flex-col gap-2.5 shadow-[0_0_35px_rgba(245,158,11,0.15)] relative overflow-hidden">
+            
+            <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+                <div class="flex items-center gap-2 min-w-0 pr-2">
+                    <div class="w-8 h-8 bg-amber-500/10 border border-amber-500/30 rounded-lg flex items-center justify-center text-amber-400 text-base shrink-0 shadow-inner">
+                        🛒
+                    </div>
+                    <div class="min-w-0 flex flex-col">
+                        <span class="text-[8px] uppercase font-black text-amber-400 tracking-widest bg-amber-500/10 px-1.5 py-0.2 rounded border border-amber-500/20 w-fit">Punto de Venta</span>
+                        <h3 id="modalVentaTituloProd" class="text-xs font-black text-white uppercase truncate">Registrar Venta Presencial</h3>
+                    </div>
                 </div>
-                <button onclick="cerrarModalVenta()" class="text-slate-400 hover:text-white text-lg font-bold px-2 cursor-pointer">✕</button>
+                <button onclick="cerrarModalVenta()" class="w-6 h-6 rounded-md bg-slate-950 border border-slate-800 text-slate-400 hover:text-white hover:border-amber-500/50 text-xs font-bold flex items-center justify-center transition cursor-pointer shrink-0">✕</button>
             </div>
 
-            <div class="bg-slate-950 border border-slate-800 p-3 rounded-xl flex justify-between items-center text-xs">
-                <span class="text-slate-400 font-bold">Precio Unitario:</span>
-                <span id="modalVentaPrecio" class="text-emerald-400 font-black text-base">$0.00</span>
+            <div class="grid grid-cols-2 gap-2">
+                <div class="bg-slate-950/90 border border-slate-800 p-2 rounded-xl flex flex-col justify-center shadow-inner">
+                    <span class="text-slate-400 text-[8px] font-bold uppercase tracking-wider">Precio Unit.</span>
+                    <span id="modalVentaPrecio" class="text-slate-200 font-black text-xs">$0.00</span>
+                </div>
+                <div class="bg-slate-950/90 border-2 border-emerald-500/40 p-2 rounded-xl flex flex-col justify-center shadow-[0_0_10px_rgba(16,185,129,0.1)]">
+                    <span class="text-emerald-400 text-[8px] font-bold uppercase tracking-wider">Total a Pagar</span>
+                    <span id="modalVentaTotalPagar" class="text-emerald-400 font-black text-sm drop-shadow-[0_0_6px_rgba(16,185,129,0.25)]">$0.00</span>
+                </div>
+            </div>
+
+            <div class="flex flex-col gap-2">
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="text-[10px] text-slate-300 font-bold mb-0.5 block">Cantidad 📦</label>
+                        <input type="number" id="ventaCantidad" value="1" min="1" required class="w-full bg-slate-950 border-2 border-amber-500/50 rounded-lg px-2.5 py-1.5 text-amber-400 font-black text-xs focus:border-amber-400 focus:outline-none transition shadow-inner">
+                    </div>
+                    <div>
+                        <label class="text-[10px] text-slate-300 font-bold mb-0.5 block">Stock Disponible</label>
+                        <div class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-slate-200 font-black text-xs flex items-center shadow-inner">
+                            <span id="modalVentaStockDisponible">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="text-[10px] text-slate-300 font-bold mb-0.5 block">Comprador (Obligatorio)</label>
+                        <input type="text" id="ventaComprador" placeholder="Ej. Juan Pérez" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-slate-100 text-xs focus:border-amber-500 focus:outline-none transition">
+                    </div>
+                    <div>
+                        <label class="text-[10px] text-slate-300 font-bold mb-0.5 block">Teléfono (Obligatorio) 📞</label>
+                        <input type="text" id="ventaTelefono" placeholder="Ej. 04121234567" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-slate-100 text-xs focus:border-amber-500 focus:outline-none transition">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="text-[10px] text-slate-300 font-bold mb-0.5 block">Notas (Opcional)</label>
+                    <input type="text" id="ventaNotas" placeholder="Ej. Entregado en tienda..." class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-slate-100 text-xs focus:border-amber-500 focus:outline-none transition">
+                </div>
+            </div>
+
+            <!-- Botones con dos opciones de finalización -->
+            <div class="flex flex-col sm:flex-row gap-2 mt-1">
+                <button onclick="ejecutarVentaPresencial(false)" class="bg-emerald-600 hover:bg-emerald-500 text-white font-black py-2.5 px-3 rounded-xl transition text-[11px] shadow-md cursor-pointer uppercase tracking-wider flex-1 flex items-center justify-center gap-1">
+                    <span>🛒 Solo Registrar Venta</span>
+                </button>
+                <button onclick="ejecutarVentaPresencial(true)" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-2.5 px-3 rounded-xl transition text-[11px] shadow-lg shadow-amber-500/20 cursor-pointer uppercase tracking-wider flex-1 flex items-center justify-center gap-1">
+                    <span>🖨️ Registrar e Imprimir Factura</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Factura Fiscal -->
+    <div id="modalFacturaFiscal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden justify-center items-center p-4 z-50">
+        <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl max-w-lg w-full flex flex-col gap-4 shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-start border-b border-slate-800 pb-3">
+                <div>
+                    <span class="text-[10px] uppercase font-bold text-amber-500 tracking-wider">Documento Fiscal</span>
+                    <h3 class="text-lg font-black text-white uppercase">Factura Fiscal</h3>
+                </div>
+                <button id="btnCerrarModalFactura" onclick="cerrarModalFacturaFiscal()" class="text-slate-400 hover:text-white text-lg font-bold px-2 cursor-pointer">✕</button>
+            </div>
+
+            <div id="contenidoFacturaFiscalPrint" class="bg-slate-950 border border-slate-800 p-4 rounded-xl flex flex-col gap-4 text-xs text-slate-200">
+                <div class="flex justify-between items-start border-b border-slate-800 pb-3">
+                    <div>
+                        <h4 id="facturaTiendaNombre" class="font-black text-amber-400 text-sm uppercase">Cargando tienda...</h4>
+                        <p id="facturaTiendaRif" class="font-bold text-slate-300 text-[11px] mt-0.5 hidden">🏢 RIF: <span></span></p>
+                        <p id="facturaTiendaCorreo" class="text-slate-400 text-[10px] mt-0.5">📧 Cargando correo...</p>
+                        <p id="facturaTiendaTelefono" class="text-slate-400 text-[10px]">📞 Cargando teléfono...</p>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-amber-500 font-black block text-xs" id="facturaNumero">N° FAC-000000</span>
+                        <span id="facturaFecha" class="text-slate-400 text-[10px]">Fecha: --/--/----</span>
+                        <span id="facturaTipo" class="text-emerald-400 text-[10px] block font-bold mt-0.5 uppercase">Tipo: Presencial</span>
+                    </div>
+                </div>
+
+                <div class="bg-slate-900/60 p-3 rounded-lg border border-slate-800">
+                    <span class="text-[10px] text-amber-400 font-bold uppercase block mb-1">Datos del Cliente / Comprador</span>
+                    <p><strong>Nombre:</strong> <span id="facturaComprador">--</span></p>
+                    <p><strong>Teléfono:</strong> <span id="facturaTelefonoCliente">--</span></p>
+                    <p><strong>Notas:</strong> <span id="facturaNotas">--</span></p>
+                </div>
+
+                <div class="flex flex-col gap-1">
+                    <span class="text-[10px] text-amber-400 font-bold uppercase block">Detalle de la Compra</span>
+                    <div class="border border-slate-800 rounded-lg overflow-hidden">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-900 text-slate-400 text-[10px] border-b border-slate-800">
+                                    <th class="p-2">Repuesto</th>
+                                    <th class="p-2 text-center">Cant.</th>
+                                    <th class="p-2 text-right">Precio Unit.</th>
+                                    <th class="p-2 text-right">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody id="facturaTablaDetalle">
+                                <!-- Dinámico -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-1 border-t border-slate-800 pt-3 text-right">
+                    <div class="flex justify-between text-slate-400 text-[11px]">
+                        <span>Subtotal:</span>
+                        <span id="facturaSubtotal">$0.00</span>
+                    </div>
+                    <div class="flex justify-between text-slate-400 text-[11px]">
+                        <span>IVA (16% / Impuesto aplicable):</span>
+                        <span id="facturaImpuesto">$0.00</span>
+                    </div>
+                    <div class="flex justify-between text-white font-black text-sm pt-1 border-t border-slate-800">
+                        <span>Total General:</span>
+                        <span id="facturaTotal" class="text-emerald-400">$0.00</span>
+                    </div>
+                </div>
+
+                <div class="text-center text-[9px] text-slate-500 pt-2 border-t border-slate-800/60 uppercase tracking-wider">
+                    ¡Gracias por su compra en TurespuestoYa! - Documento Fiscal Válido
+                </div>
+            </div>
+
+            <div id="btnAccionImprimirFactura" class="flex gap-2">
+                <button onclick="imprimirFacturaFiscal()" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-3 rounded-xl transition text-xs shadow-lg shadow-amber-500/20 cursor-pointer flex-1 flex items-center justify-center gap-1.5">
+                    🖨️ Imprimir / Guardar PDF
+                </button>
+                <button onclick="cerrarModalFacturaFiscal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 px-4 rounded-xl transition text-xs cursor-pointer">
+                    Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Agregar / Editar RIF Comercial -->
+    <div id="modalRifComercial" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden justify-center items-center p-4 z-50">
+        <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl max-w-md w-full flex flex-col gap-4 shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-start">
+                <div>
+                    <span class="text-[10px] uppercase font-bold text-amber-500 tracking-wider">Datos Fiscales de la Tienda</span>
+                    <h3 class="text-lg font-black text-white uppercase">Registrar RIF Comercial</h3>
+                </div>
+                <button onclick="cerrarModalRif()" class="text-slate-400 hover:text-white text-lg font-bold px-2 cursor-pointer">✕</button>
             </div>
 
             <div class="flex flex-col gap-3">
                 <div>
-                    <label class="text-xs text-slate-400 font-bold mb-1 block">Nombre del Comprador</label>
-                    <input type="text" id="ventaComprador" placeholder="Ej. Cliente mostrador" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-slate-100 text-xs focus:border-amber-500 focus:outline-none">
-                </div>
-                <div>
-                    <label class="text-xs text-slate-400 font-bold mb-1 block">Teléfono / Contacto</label>
-                    <input type="text" id="ventaTelefono" placeholder="Ej. Opcional" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-slate-100 text-xs focus:border-amber-500 focus:outline-none">
-                </div>
-                <div>
-                    <label class="text-xs text-slate-400 font-bold mb-1 block">Notas (Opcional)</label>
-                    <textarea id="ventaNotas" rows="2" placeholder="Ej. Entregado en tienda..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-slate-100 text-xs focus:border-amber-500 focus:outline-none resize-none"></textarea>
+                    <label class="text-xs text-slate-400 font-bold mb-1 block">Número de RIF Comercial (Opcional)</label>
+                    <input type="text" id="inputRifModal" placeholder="Ej. J-12345678-9" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-slate-100 text-xs focus:border-amber-500 focus:outline-none uppercase">
+                    <span class="text-[10px] text-slate-500 mt-1 block">Si lo dejas en blanco, no aparecerá en tus facturas fiscales.</span>
                 </div>
             </div>
 
-            <button id="btnConfirmarVentaFisica" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black py-3 rounded-xl transition text-xs shadow-lg shadow-emerald-500/20 cursor-pointer">
-                Confirmar Venta y Descontar Stock 🛒
-            </button>
+            <div class="flex gap-2">
+                <button id="btnGuardarRif" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-3 rounded-xl transition text-xs shadow-lg shadow-amber-500/20 cursor-pointer flex-1">
+                    Guardar RIF Comercial 🏢
+                </button>
+                <button onclick="eliminarRifComercial()" class="bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white font-bold py-3 px-4 rounded-xl transition text-xs border border-red-500/30 cursor-pointer" title="Borrar RIF registrado">
+                    Eliminar RIF 🗑️
+                </button>
+            </div>
         </div>
     </div>
 
     <!-- Modal Cambiar Contraseña -->
     <div id="modalCambiarPassword" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden justify-center items-center p-4 z-50">
-        <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl max-w-md w-full flex flex-col gap-4 shadow-2xl">
+        <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl max-w-md w-full flex flex-col gap-4 shadow-2xl max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-start">
                 <div>
                     <span class="text-[10px] uppercase font-bold text-amber-500 tracking-wider">Seguridad de la Cuenta</span>
@@ -302,34 +560,6 @@
         </div>
     </div>
 
-    <!-- Modal Factura Fiscal / Hoja de Impresión Amplia -->
-    <div id="modalFacturaFiscal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden justify-center items-center p-4 z-50 overflow-y-auto">
-        <div class="bg-slate-900 border border-slate-800 p-6 md:p-8 rounded-2xl max-w-3xl w-full flex flex-col gap-5 shadow-2xl my-auto print:bg-white print:text-black print:border-none print:p-0 print:shadow-none print:w-full print:max-w-none">
-            
-            <div class="flex justify-between items-center print:hidden border-b border-slate-800 pb-3">
-                <div>
-                    <span class="text-xs uppercase font-bold text-amber-500 tracking-wider">Vista Previa de Impresión</span>
-                    <h3 class="text-xl font-black text-white uppercase">Factura Fiscal</h3>
-                </div>
-                <button onclick="cerrarModalFactura()" class="text-slate-400 hover:text-white text-xl font-bold px-2 cursor-pointer">✕</button>
-            </div>
-
-            <!-- Hoja Blanca de la Factura (Diseño Amplio) -->
-            <div id="contenidoFacturaImprimir" class="bg-white text-slate-950 p-6 md:p-8 rounded-xl flex flex-col gap-6 font-sans shadow-2xl border border-slate-200 print:border-2 print:border-black print:p-8 print:shadow-none">
-                <!-- Se genera dinámicamente -->
-            </div>
-
-            <div class="flex gap-3 print:hidden">
-                <button onclick="window.print()" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-3 rounded-xl transition text-sm shadow-lg shadow-amber-500/20 cursor-pointer flex-1 flex items-center justify-center gap-2">
-                    🖨️ Imprimir Factura Fiscal
-                </button>
-                <button onclick="cerrarModalFactura()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-3 px-6 rounded-xl transition text-sm cursor-pointer">
-                    Cerrar
-                </button>
-            </div>
-        </div>
-    </div>
-
     <!-- Script del Panel -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
@@ -347,19 +577,86 @@
         const db = getDatabase(app);
         const auth = getAuth(app);
 
+        const ADMIN_EMAIL = "josegrexx@gmail.com";
         let uidTiendaActual = null;
         let imagenBase64Actual = "";
         let productoVentaActual = null;
         let ventasGlobalesMemoria = {};
         let inventarioActivoMemoria = {};
+        let tiendaDatosMemoria = {};
         let sonidoActivado = true;
+        let mostrarArchivados = false;
+        
+        let modoVistaInventario = (window.innerWidth < 640 || /Android|iPhone|iPad|iPod|IEMobile|Opera Mini/i.test(navigator.userAgent)) ? 'list' : 'grid';
 
         // Reloj en tiempo real
         setInterval(() => {
             const ahora = new Date();
-            document.getElementById('infoRelojHora').innerText = ahora.toLocaleTimeString();
+            document.getElementById('infoRelojHora').innerText = meLocaleTimeString(ahora);
             document.getElementById('infoRelojFecha').innerText = ahora.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
         }, 1000);
+
+        function meLocaleTimeString(d) {
+            return d.toLocaleTimeString();
+        }
+
+        // Control de vista del inventario
+        window.cambiarVistaInventario = function(modo) {
+            modoVistaInventario = modo;
+            renderizarInventarioYResumen();
+        };
+
+        // Control de pestañas de filtro: Activos / Archivados
+        window.cambiarFiltroArchivo = function(archivados) {
+            mostrarArchivados = archivados;
+            const btnActivos = document.getElementById('btnTabActivos');
+            const btnArchivados = document.getElementById('btnTabArchivados');
+
+            if (mostrarArchivados) {
+                btnArchivados.className = "px-2.5 py-1 rounded-lg text-xs font-bold transition bg-amber-500 text-slate-950 cursor-pointer flex items-center gap-1";
+                btnActivos.className = "px-2.5 py-1 rounded-lg text-xs font-bold transition text-slate-400 hover:text-white cursor-pointer flex items-center gap-1";
+            } else {
+                btnActivos.className = "px-2.5 py-1 rounded-lg text-xs font-bold transition bg-emerald-500 text-slate-950 cursor-pointer flex items-center gap-1";
+                btnArchivados.className = "px-2.5 py-1 rounded-lg text-xs font-bold transition text-slate-400 hover:text-white cursor-pointer flex items-center gap-1";
+            }
+            renderizarInventarioYResumen();
+        };
+
+        // Función para archivar o desarchivar repuestos con solicitud de nuevo stock
+        window.archivarRepuesto = function(id, archivar = true) {
+            if (archivar) {
+                if (confirm("¿Deseas archivar este repuesto? Quedará fuera del catálogo visible.")) {
+                    const updates = {};
+                    updates[`inventarios/${uidTiendaActual}/${id}/archivado`] = true;
+                    updates[`productos/${uidTiendaActual}/${id}/archivado`] = true;
+
+                    update(ref(db), updates)
+                        .then(() => alert("¡Repuesto archivado con éxito!"))
+                        .catch(err => alert("Error al archivar: " + err.message));
+                }
+            } else {
+                const inputStock = prompt("Para reactivar este repuesto, ingresa la cantidad de nuevo stock disponible:", "1");
+                if (inputStock === null) return;
+
+                const nuevoStock = parseInt(inputStock);
+                if (isNaN(nuevoStock) || nuevoStock <= 0) {
+                    return alert("Debes ingresar una cantidad de stock válida y mayor a 0 para reactivar el repuesto.");
+                }
+
+                const updates = {};
+                updates[`inventarios/${uidTiendaActual}/${id}/archivado`] = false;
+                updates[`inventarios/${uidTiendaActual}/${id}/stock`] = nuevoStock;
+
+                updates[`productos/${uidTiendaActual}/${id}/archivado`] = false;
+                updates[`productos/${uidTiendaActual}/${id}/stock`] = nuevoStock;
+
+                update(ref(db), updates)
+                    .then(() => {
+                        alert(`¡Repuesto reactivado con éxito con un nuevo stock de ${nuevoStock} unidades!`);
+                    })
+                    .catch(err => alert("Error al reactivar: " + err.message));
+            }
+        };
 
         // Control del Menú Desplegable de Opciones
         window.toggleMenuOpciones = function() {
@@ -379,7 +676,6 @@
             menu.classList.remove('flex');
         };
 
-        // Cerrar menú al hacer clic fuera
         window.addEventListener('click', function(e) {
             const menu = document.getElementById('menuDesplegableOpciones');
             const botonOpciones = e.target.closest('button');
@@ -404,6 +700,42 @@
             }, 2000);
         };
 
+        // Modales de RIF y Contraseña
+        window.abrirModalRif = function() {
+            document.getElementById('inputRifModal').value = tiendaDatosMemoria.rifComercial || tiendaDatosMemoria.rif || '';
+            const modal = document.getElementById('modalRifComercial');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        };
+
+        window.cerrarModalRif = function() {
+            const modal = document.getElementById('modalRifComercial');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        };
+
+        document.getElementById('btnGuardarRif').addEventListener('click', () => {
+            const rifInput = document.getElementById('inputRifModal').value.trim().toUpperCase();
+            
+            update(ref(db, `tiendas/${uidTiendaActual}`), { rifComercial: rifInput })
+                .then(() => {
+                    alert(rifInput ? "¡RIF Comercial guardado con éxito!" : "RIF Comercial actualizado.");
+                    cerrarModalRif();
+                })
+                .catch(err => alert("Error al guardar RIF: " + err.message));
+        });
+
+        window.eliminarRifComercial = function() {
+            if (confirm("¿Deseas eliminar el RIF comercial para que no aparezca en las facturas?")) {
+                update(ref(db, `tiendas/${uidTiendaActual}`), { rifComercial: null, rif: null })
+                    .then(() => {
+                        alert("RIF Comercial eliminado correctamente.");
+                        cerrarModalRif();
+                    })
+                    .catch(err => alert("Error al eliminar RIF: " + err.message));
+            }
+        };
+
         window.abrirModalPassword = function() {
             document.getElementById('inputNuevaPassword').value = "";
             document.getElementById('inputConfirmarPassword').value = "";
@@ -418,141 +750,418 @@
             modal.classList.remove('flex');
         };
 
-        // Generar y Abrir Modal de Factura Fiscal para Impresión en Hoja Grande
-        window.abrirFactura = function(v) {
-            const totalNum = parseFloat(v.precio || 0);
-            const subtotalNum = totalNum / 1.16;
-            const ivaNum = totalNum - subtotalNum;
+        // Funciones para Factura Fiscal con validación estricta de RIF
+        window.abrirFacturaFiscal = function(v) {
+            const nombreTienda = document.getElementById('infoNombreTienda').innerText || 'Mi Tienda';
+            const correoTienda = document.getElementById('infoCorreoTienda').innerText || '';
+            const telTienda = document.getElementById('infoTelefonoTienda').innerText || '';
+            const rifTienda = tiendaDatosMemoria.rifComercial || tiendaDatosMemoria.rif || '';
 
-            const numFactura = v.numFactura || `VNT-${(v.id || Math.floor(Math.random() * 900000 + 100000)).toString().slice(-6).toUpperCase()}`;
-
-            const infoNombre = document.getElementById('infoNombreTienda').innerText;
-            const nombreTienda = (infoNombre && infoNombre !== 'Cargando tienda...') ? infoNombre : 'TURESPUESTOYA OFICIAL';
+            document.getElementById('facturaTiendaNombre').innerText = nombreTienda;
             
-            const infoEmail = document.getElementById('infoCorreoTienda').innerText.replace('📧 ', '');
-            const emailTienda = (infoEmail && infoEmail !== 'Cargando correo...') ? infoEmail : 'josegrexx@gmail.com';
-            
-            const infoTel = document.getElementById('infoTelefonoTienda').innerText.replace('📞 ', '');
-            const telTienda = (infoTel && infoTel !== 'Cargando teléfono...') ? infoTel : '04120000000';
+            const pRif = document.getElementById('facturaTiendaRif');
+            if (rifTienda && rifTienda.trim() !== '') {
+                pRif.querySelector('span').innerText = rifTienda.toUpperCase();
+                pRif.classList.remove('hidden');
+            } else {
+                pRif.classList.add('hidden');
+            }
 
-            const htmlFactura = `
-                <!-- Encabezado Principal -->
-                <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b-2 border-slate-900 pb-4 gap-4 print:border-black">
-                    <div>
-                        <span class="text-[11px] font-black uppercase tracking-widest text-slate-500 block mb-1">Comprobante Oficial</span>
-                        <h2 class="font-black text-slate-900 text-2xl uppercase tracking-wider">${nombreTienda}</h2>
-                        <div class="text-slate-600 text-xs mt-1 space-y-0.5">
-                            <p>📧 ${emailTienda}</p>
-                            <p>📞 ${telTienda}</p>
-                        </div>
-                    </div>
+            document.getElementById('facturaTiendaCorreo').innerText = correoTienda;
+            document.getElementById('facturaTiendaTelefono').innerText = telTienda;
 
-                    <div class="text-left md:text-right bg-slate-50 p-4 rounded-xl border border-slate-300 w-full md:w-auto print:bg-white print:border-black">
-                        <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Documento Fiscal</span>
-                        <h3 class="font-black text-slate-900 text-xl uppercase tracking-wide">FACTURA FISCAL</h3>
-                        <p class="font-bold text-amber-600 print:text-black text-base mt-0.5">N° ${numFactura}</p>
-                        <div class="text-slate-600 text-xs mt-1 space-y-0.5">
-                            <p><strong>Fecha:</strong> ${v.fecha || new Date().toLocaleString()}</p>
-                            <p><strong>Tipo de Emisión:</strong> <span class="uppercase font-bold">${v.tipo || 'Venta'}</span></p>
-                        </div>
-                    </div>
-                </div>
+            const numeroFact = v.idVenta || ("FAC-" + (v.timestamp ? String(v.timestamp).slice(-6) : Math.floor(Math.random() * 900000 + 100000)));
+            document.getElementById('facturaNumero').innerText = `N° ${numeroFact}`;
+            document.getElementById('facturaFecha').innerText = `Fecha: ${v.fecha || new Date().toLocaleString()}`;
+            document.getElementById('facturaTipo').innerText = `Tipo: ${v.tipo || 'Presencial'}`;
 
-                <!-- Bloque de Datos del Cliente -->
-                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 print:bg-white print:border-black">
-                    <h4 class="font-black text-slate-900 text-xs uppercase tracking-wider mb-2 border-b border-slate-200 pb-1 print:border-black">Datos del Cliente / Comprador</h4>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs text-slate-800">
-                        <p><strong>Nombre / Razón Social:</strong> <span class="uppercase font-bold">${v.comprador || 'Cliente Mostrador'}</span></p>
-                        <p><strong>Teléfono de Contacto:</strong> <span class="font-bold">${v.telefono || 'N/A'}</span></p>
-                        <p class="col-span-full"><strong>Notas / Observaciones:</strong> <span class="italic text-slate-600 print:text-black">${v.notas || 'Sin observaciones'}</span></p>
-                    </div>
-                </div>
+            document.getElementById('facturaComprador').innerText = v.comprador || 'Cliente Mostrador';
+            document.getElementById('facturaTelefonoCliente').innerText = v.telefono || 'Sin teléfono';
+            document.getElementById('facturaNotas').innerText = v.notas || 'Sin notas adicionales';
 
-                <!-- Tabla de Detalle de Compra -->
-                <div class="overflow-x-auto my-1">
-                    <table class="w-full text-left border-collapse text-xs md:text-sm">
-                        <thead>
-                            <tr class="bg-slate-900 text-white uppercase text-[11px] tracking-wider print:bg-slate-200 print:text-black border-b-2 border-slate-900 print:border-black">
-                                <th class="py-3 px-4">Repuesto / Descripción</th>
-                                <th class="py-3 px-4 text-center">Cant.</th>
-                                <th class="py-3 px-4 text-right">Precio Unit.</th>
-                                <th class="py-3 px-4 text-right">Total</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-slate-200 print:divide-black">
-                            <tr class="text-slate-900">
-                                <td class="py-4 px-4 font-bold uppercase text-slate-900">${v.repuesto}</td>
-                                <td class="py-4 px-4 text-center font-semibold">1</td>
-                                <td class="py-4 px-4 text-right font-semibold">$${subtotalNum.toFixed(2)}</td>
-                                <td class="py-4 px-4 text-right font-black text-slate-900">$${subtotalNum.toFixed(2)}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+            const cant = parseInt(v.cantidad) || 1;
+            const precioTotalNum = parseFloat(v.precio || 0);
+            const subtotal = precioTotalNum / 1.16;
+            const impuesto = precioTotalNum - subtotal;
+            const unitarioOriginal = v.precioUnitario ? parseFloat(v.precioUnitario) : (precioTotalNum / cant);
+            const unitarioSubtotal = unitarioOriginal / 1.16;
 
-                <!-- Resumen Financiero de la Factura -->
-                <div class="flex flex-col sm:flex-row justify-between items-end pt-2 gap-4 border-t-2 border-slate-900 print:border-black">
-                    <div class="text-[11px] text-slate-500 max-w-sm print:text-black leading-relaxed">
-                        <p class="font-bold text-slate-800 print:text-black">Notas Legales:</p>
-                        <p class="italic">Este documento es emitido como comprobante válido de la transacción procesada en el sistema TurespuestoYa.</p>
-                    </div>
-
-                    <div class="w-full sm:w-72 bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-2 text-xs print:bg-white print:border-black">
-                        <div class="flex justify-between text-slate-700 print:text-black">
-                            <span>Subtotal:</span>
-                            <span class="font-bold">$${subtotalNum.toFixed(2)}</span>
-                        </div>
-                        <div class="flex justify-between text-slate-700 print:text-black">
-                            <span>IVA (16% Impuesto aplicable):</span>
-                            <span class="font-bold">$${ivaNum.toFixed(2)}</span>
-                        </div>
-                        <div class="flex justify-between text-slate-900 font-black text-base pt-2 border-t-2 border-slate-900 print:border-black">
-                            <span>Total General:</span>
-                            <span class="text-emerald-700 print:text-black">$${totalNum.toFixed(2)}</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Pie de Página Fiscal -->
-                <div class="text-center text-xs font-bold text-slate-700 pt-4 border-t border-slate-200 italic print:border-black print:text-black">
-                    ¡Gracias por su compra en TurespuestoYa! - Documento Fiscal Válido
-                </div>
+            document.getElementById('facturaTablaDetalle').innerHTML = `
+                <tr class="border-b border-slate-800/60 text-slate-300 text-[11px]">
+                    <td class="p-2 uppercase font-bold">${v.repuesto || 'Repuesto'}</td>
+                    <td class="p-2 text-center font-black text-amber-400">${cant}</td>
+                    <td class="p-2 text-right">$${unitarioSubtotal.toFixed(2)}</td>
+                    <td class="p-2 text-right font-black text-emerald-400">$${subtotal.toFixed(2)}</td>
+                </tr>
             `;
 
-            document.getElementById('contenidoFacturaImprimir').innerHTML = htmlFactura;
+            document.getElementById('facturaSubtotal').innerText = `$${subtotal.toFixed(2)}`;
+            document.getElementById('facturaImpuesto').innerText = `$${impuesto.toFixed(2)} (16%)`;
+            document.getElementById('facturaTotal').innerText = `$${precioTotalNum.toFixed(2)}`;
+
             const modal = document.getElementById('modalFacturaFiscal');
             modal.classList.remove('hidden');
             modal.classList.add('flex');
         };
 
-        window.cerrarModalFactura = function() {
+        window.cerrarModalFacturaFiscal = function() {
             const modal = document.getElementById('modalFacturaFiscal');
             modal.classList.add('hidden');
             modal.classList.remove('flex');
+        };
+
+        window.imprimirFacturaFiscal = function() {
+            window.print();
+        };
+
+        // Exportar a Excel por fecha
+        window.exportarVentasExcel = function() {
+            if (!ventasGlobalesMemoria || Object.keys(ventasGlobalesMemoria).length === 0) {
+                return alert("No hay ventas registradas para exportar.");
+            }
+
+            const busquedaFecha = document.getElementById('inputBuscarVentasFecha')?.value.toLowerCase().trim() || '';
+
+            let ventasArr = Object.entries(ventasGlobalesMemoria).map(([id, v]) => ({ id, ...v }));
+            ventasArr.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+
+            if (busquedaFecha) {
+                ventasArr = ventasArr.filter(v => {
+                    const fechaStr = (v.fecha || '').toLowerCase();
+                    return fechaStr.includes(busquedaFecha);
+                });
+            }
+
+            if (ventasArr.length === 0) {
+                return alert(`No se encontraron ventas para la fecha o criterio: "${busquedaFecha}".`);
+            }
+
+            let totalIngresos = 0;
+            let totalUnidades = 0;
+            let presencialesCount = 0;
+            let deliveryCount = 0;
+
+            ventasArr.forEach(v => {
+                const cant = parseInt(v.cantidad || 1);
+                const precio = parseFloat(v.precio || 0);
+                totalUnidades += cant;
+                totalIngresos += precio;
+                if ((v.tipo || '').toLowerCase() === 'delivery') {
+                    deliveryCount += cant;
+                } else {
+                    presencialesCount += cant;
+                }
+            });
+
+            const promedioVenta = ventasArr.length > 0 ? (totalIngresos / ventasArr.length).toFixed(2) : "0.00";
+            const nombreTienda = document.getElementById('infoNombreTienda')?.innerText || 'Mi Tienda de Repuestos';
+            const fechaReporte = new Date().toLocaleString('es-ES');
+            const textoFiltroExcel = busquedaFecha ? `FILTRO APLICADO POR FECHA / CRITERIO: "${busquedaFecha.toUpperCase()}"` : 'REPORTE GLOBAL COMPLETO (TODAS LAS FECHAS)';
+
+            let htmlExcel = `
+            <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+            <head>
+                <meta charset="utf-8">
+                <!--[if gte mso 9]>
+                <xml>
+                    <x:ExcelWorkbook>
+                        <x:ExcelWorksheets>
+                            <x:ExcelWorksheet>
+                                <x:Name>Reporte de Ventas</x:Name>
+                                <x:WorksheetOptions>
+                                    <x:DisplayGridlines/>
+                                </x:WorksheetOptions>
+                            </x:ExcelWorksheet>
+                        </x:ExcelWorksheets>
+                    </x:ExcelWorkbook>
+                </xml>
+                <![endif]-->
+                <style>
+                    body { font-family: Arial, sans-serif; font-size: 11px; }
+                    .titulo { font-size: 16px; font-weight: bold; color: #ffffff; background-color: #0f172a; text-align: center; padding: 12px; }
+                    .subtitulo { font-size: 10px; color: #d97706; font-weight: bold; text-align: center; background-color: #fef3c7; padding: 6px; }
+                    .info-header { font-size: 10px; color: #64748b; text-align: center; background-color: #f8fafc; padding: 4px; }
+                    .kpi-title { font-size: 9px; color: #475569; font-weight: bold; text-transform: uppercase; background-color: #f1f5f9; text-align: center; }
+                    .kpi-val { font-size: 13px; font-weight: bold; color: #0f172a; text-align: center; background-color: #ffffff; }
+                    .kpi-val-green { font-size: 13px; font-weight: bold; color: #15803d; text-align: center; background-color: #ffffff; }
+                    .tabla-ventas th { background-color: #1e293b; color: #f59e0b; font-weight: bold; font-size: 10px; border: 1px solid #334155; padding: 6px; text-align: center; text-transform: uppercase; }
+                    .tabla-ventas td { border: 1px solid #cbd5e1; padding: 5px; font-size: 10px; color: #0f172a; }
+                    .fila-impar { background-color: #ffffff; }
+                    .fila-par { background-color: #f8fafc; }
+                    .monto { text-align: right; font-weight: bold; color: #15803d; }
+                    .num { text-align: center; }
+                    .text-left { text-align: left; }
+                    .total-row { background-color: #0f172a; color: #ffffff; font-weight: bold; }
+                    .total-row td { border: 1px solid #0f172a; font-size: 11px; padding: 6px; }
+                </style>
+            </head>
+            <body>
+                <table border="0">
+                    <tr><td colspan="10" class="titulo">REPORTE DE VENTAS - ${nombreTienda.toUpperCase()}</td></tr>
+                    <tr><td colspan="10" class="subtitulo">${textoFiltroExcel}</td></tr>
+                    <tr><td colspan="10" class="info-header">Generado el: ${fechaReporte} | Plataforma TurespuestoYa</td></tr>
+                    <tr><td colspan="10"></td></tr>
+                </table>
+
+                <table border="1">
+                    <tr>
+                        <td colspan="2" class="kpi-title">Transacciones Filtradas</td>
+                        <td colspan="2" class="kpi-title">Unidades Vendidas</td>
+                        <td colspan="3" class="kpi-title">Total Recaudado ($ USD)</td>
+                        <td colspan="3" class="kpi-title">Promedio por Venta ($ USD)</td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" class="kpi-val">${ventasArr.length} ventas</td>
+                        <td colspan="2" class="kpi-val">${totalUnidades} uds</td>
+                        <td colspan="3" class="kpi-val-green">$${totalIngresos.toFixed(2)}</td>
+                        <td colspan="3" class="kpi-val">$${promedioVenta}</td>
+                    </tr>
+                    <tr>
+                        <td colspan="5" class="kpi-title">Ventas Presenciales (En Local)</td>
+                        <td colspan="5" class="kpi-title">Ventas Vía Delivery</td>
+                    </tr>
+                    <tr>
+                        <td colspan="5" class="kpi-val">${presencialesCount} uds</td>
+                        <td colspan="5" class="kpi-val">${deliveryCount} uds</td>
+                    </tr>
+                </table>
+
+                <br>
+                <table class="tabla-ventas" border="1">
+                    <thead>
+                        <tr>
+                            <th>N° ID Venta</th>
+                            <th>Fecha y Hora</th>
+                            <th>Repuesto / Producto</th>
+                            <th>Cant.</th>
+                            <th>Precio Unit. ($)</th>
+                            <th>Total ($)</th>
+                            <th>Tipo Venta</th>
+                            <th>Cliente / Comprador</th>
+                            <th>Teléfono</th>
+                            <th>Notas u Observaciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${ventasArr.map((v, idx) => {
+                            const cant = parseInt(v.cantidad || 1);
+                            const total = parseFloat(v.precio || 0);
+                            const precioUnit = v.precioUnitario ? parseFloat(v.precioUnitario) : (total / cant);
+                            const claseFila = idx % 2 === 0 ? 'fila-impar' : 'fila-par';
+                            return `
+                                <tr class="${claseFila}">
+                                    <td class="num">${v.idVenta || v.id || 'S/N'}</td>
+                                    <td class="num">${v.fecha || '--'}</td>
+                                    <td class="text-left"><strong>${v.repuesto || '--'}</strong></td>
+                                    <td class="num">${cant}</td>
+                                    <td class="monto">$${precioUnit.toFixed(2)}</td>
+                                    <td class="monto">$${total.toFixed(2)}</td>
+                                    <td class="num">${v.tipo || 'Presencial'}</td>
+                                    <td class="text-left">${v.comprador || 'Cliente Mostrador'}</td>
+                                    <td class="num">${v.telefono || '--'}</td>
+                                    <td class="text-left">${v.notas || '--'}</td>
+                                </tr>
+                            `;
+                        }).join('')}
+                    </tbody>
+                    <tfoot>
+                        <tr class="total-row">
+                            <td colspan="3" style="text-align: right;">TOTALES FILTRADOS:</td>
+                            <td class="num">${totalUnidades}</td>
+                            <td></td>
+                            <td class="monto" style="color: #4ade80;">$${totalIngresos.toFixed(2)}</td>
+                            <td colspan="4"></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </body>
+            </html>
+            `;
+
+            const blob = new Blob([htmlExcel], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            const sufijoFecha = busquedaFecha ? `_Fecha_${busquedaFecha.replace(/[^a-zA-Z0-9]/g, '-')}` : '_Global';
+            const fechaHoyStr = new Date().toISOString().slice(0, 10);
+            link.setAttribute("download", `Reporte_Ventas_${nombreTienda.replace(/[^a-zA-Z0-9]/g, '_')}${sufijoFecha}_${fechaHoyStr}.xls`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        };
+
+        // Exportar / Imprimir Reporte en PDF
+        window.exportarVentasPdf = function() {
+            if (!ventasGlobalesMemoria || Object.keys(ventasGlobalesMemoria).length === 0) {
+                return alert("No hay ventas registradas para exportar en PDF.");
+            }
+
+            const busquedaFecha = document.getElementById('inputBuscarVentasFecha')?.value.toLowerCase().trim() || '';
+
+            let ventasArr = Object.entries(ventasGlobalesMemoria).map(([id, v]) => ({ id, ...v }));
+            ventasArr.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+
+            if (busquedaFecha) {
+                ventasArr = ventasArr.filter(v => {
+                    const fechaStr = (v.fecha || '').toLowerCase();
+                    return fechaStr.includes(busquedaFecha);
+                });
+            }
+
+            if (ventasArr.length === 0) {
+                return alert(`No se encontraron ventas para la fecha o criterio: "${busquedaFecha}".`);
+            }
+
+            let totalIngresos = 0;
+            let totalUnidades = 0;
+            let presencialesCount = 0;
+            let deliveryCount = 0;
+
+            ventasArr.forEach(v => {
+                const cant = parseInt(v.cantidad || 1);
+                const precio = parseFloat(v.precio || 0);
+                totalUnidades += cant;
+                totalIngresos += precio;
+                if ((v.tipo || '').toLowerCase() === 'delivery') {
+                    deliveryCount += cant;
+                } else {
+                    presencialesCount += cant;
+                }
+            });
+
+            const promedioVenta = ventasArr.length > 0 ? (totalIngresos / ventasArr.length).toFixed(2) : "0.00";
+            const nombreTienda = document.getElementById('infoNombreTienda')?.innerText || 'Mi Tienda de Repuestos';
+            const rifTienda = tiendaDatosMemoria.rifComercial || tiendaDatosMemoria.rif || '';
+            const fechaReporte = new Date().toLocaleString('es-ES');
+            const textoFiltroPdf = busquedaFecha ? `Filtro aplicado: "${busquedaFecha.toUpperCase()}"` : 'Reporte Global Completo';
+
+            // Crear ventana de impresión limpia para PDF
+            const ventanaPdf = window.open('', '_blank');
+            ventanaPdf.document.write(`
+                <!DOCTYPE html>
+                <html lang="es">
+                <head>
+                    <meta charset="UTF-8">
+                    <title>Reporte de Ventas - ${nombreTienda}</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; color: #111; margin: 15px; font-size: 11px; }
+                        .header { text-align: center; border-bottom: 2px solid #0f172a; padding-bottom: 10px; margin-bottom: 15px; }
+                        .header h2 { margin: 0; font-size: 18px; color: #0f172a; text-transform: uppercase; }
+                        .header p { margin: 3px 0; color: #555; font-size: 10px; }
+                        .kpi-container { display: flex; justify-content: space-between; margin-bottom: 15px; gap: 10px; }
+                        .kpi-box { border: 1px solid #cbd5e1; padding: 8px; border-radius: 6px; text-align: center; flex: 1; background: #f8fafc; }
+                        .kpi-box span { display: block; font-size: 9px; color: #64748b; text-transform: uppercase; font-weight: bold; }
+                        .kpi-box strong { font-size: 14px; color: #0f172a; }
+                        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 10px; }
+                        th, td { border: 1px solid #cbd5e1; padding: 6px; text-align: left; }
+                        th { background-color: #0f172a; color: #ffffff; text-transform: uppercase; font-size: 9px; }
+                        tr:nth-child(even) { background-color: #f8fafc; }
+                        .text-right { text-align: right; }
+                        .text-center { text-align: center; }
+                        .footer { margin-top: 20px; text-align: center; font-size: 9px; color: #64748b; border-top: 1px solid #cbd5e1; pt: 10px; }
+                        @media print {
+                            button { display: none !important; }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div style="text-align: right; margin-bottom: 10px;">
+                        <button onclick="window.print()" style="background: #2563eb; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 12px;">🖨️ Imprimir / Guardar PDF</button>
+                    </div>
+
+                    <div class="header">
+                        <h2>${nombreTienda}</h2>
+                        ${rifTienda ? `<p><strong>RIF:</strong> ${rifTienda}</p>` : ''}
+                        <p><strong>Reporte de Ventas y Transacciones</strong> | ${textoFiltroPdf}</p>
+                        <p>Generado el: ${fechaReporte}</p>
+                    </div>
+
+                    <div class="kpi-container">
+                        <div class="kpi-box">
+                            <span>Ventas Total</span>
+                            <strong>${ventasArr.length}</strong>
+                        </div>
+                        <div class="kpi-box">
+                            <span>Unidades</span>
+                            <strong>${totalUnidades} uds</strong>
+                        </div>
+                        <div class="kpi-box">
+                            <span>Recaudación</span>
+                            <strong style="color: #15803d;">$${totalIngresos.toFixed(2)}</strong>
+                        </div>
+                        <div class="kpi-box">
+                            <span>Promedio / Venta</span>
+                            <strong>$${promedioVenta}</strong>
+                        </div>
+                    </div>
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <th class="text-center">ID Venta</th>
+                                <th class="text-center">Fecha</th>
+                                <th>Repuesto</th>
+                                <th class="text-center">Cant.</th>
+                                <th class="text-right">Precio Unit.</th>
+                                <th class="text-right">Total ($)</th>
+                                <th class="text-center">Tipo</th>
+                                <th>Comprador</th>
+                                <th class="text-center">Teléfono</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${ventasArr.map(v => {
+                                const cant = parseInt(v.cantidad || 1);
+                                const total = parseFloat(v.precio || 0);
+                                const precioUnit = v.precioUnitario ? parseFloat(v.precioUnitario) : (total / cant);
+                                return `
+                                    <tr>
+                                        <td class="text-center"><strong>${v.idVenta || 'S/N'}</strong></td>
+                                        <td class="text-center">${v.fecha || '--'}</td>
+                                        <td><strong>${v.repuesto || '--'}</strong></td>
+                                        <td class="text-center">${cant}</td>
+                                        <td class="text-right">$${precioUnit.toFixed(2)}</td>
+                                        <td class="text-right" style="color: #15803d; font-weight: bold;">$${total.toFixed(2)}</td>
+                                        <td class="text-center">${v.tipo || 'Presencial'}</td>
+                                        <td>${v.comprador || 'Cliente Mostrador'}</td>
+                                        <td class="text-center">${v.telefono || '--'}</td>
+                                    </tr>
+                                `;
+                            }).join('')}
+                        </tbody>
+                        <tfoot>
+                            <tr style="background: #0f172a; color: white; font-weight: bold;">
+                                <td colspan="3" class="text-right" style="padding: 8px;">TOTALES GENERALES:</td>
+                                <td class="text-center">${totalUnidades}</td>
+                                <td colspan="2" class="text-right" style="color: #4ade80;">$${totalIngresos.toFixed(2)}</td>
+                                <td colspan="3"></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+
+                    <div class="footer">
+                        Plataforma TurespuestoYa - Documento de Control Interno
+                    </div>
+                </body>
+                </html>
+            `);
+            ventanaPdf.document.close();
         };
 
         document.getElementById('btnEjecutarCambioPassword').addEventListener('click', () => {
             const nuevaPass = document.getElementById('inputNuevaPassword').value.trim();
             const confirmarPass = document.getElementById('inputConfirmarPassword').value.trim();
 
-            if (!nuevaPass || !confirmarPass) {
-                return alert("Por favor llena ambos campos de contraseña.");
-            }
-            if (nuevaPass.length < 6) {
-                return alert("La contraseña debe tener al menos 6 caracteres.");
-            }
-            if (nuevaPass !== confirmarPass) {
-                return alert("Las contraseñas no coinciden.");
-            }
+            if (!nuevaPass || !confirmarPass) return alert("Por favor llena ambos campos de contraseña.");
+            if (nuevaPass.length < 6) return alert("La contraseña debe tener al menos 6 caracteres.");
+            if (nuevaPass !== confirmarPass) return alert("Las contraseñas no coinciden.");
 
             const user = auth.currentUser;
             if (user) {
                 updatePassword(user, nuevaPass).then(() => {
                     alert("¡Contraseña actualizada con éxito!");
                     cerrarModalPassword();
-                }).catch((error) => {
-                    alert("Error al actualizar contraseña: " + error.message);
-                });
+                }).catch((error) => alert("Error al actualizar contraseña: " + error.message));
             } else {
                 alert("No hay una sesión activa.");
             }
@@ -587,6 +1196,15 @@
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 uidTiendaActual = user.uid;
+
+                // Validación para mostrar el botón "Adm" en el panel si el correo es el administrador
+                if (user.email === ADMIN_EMAIL) {
+                    const contenedorAdmPanel = document.getElementById('contenedorBotonAdmExclusivoPanel');
+                    if (contenedorAdmPanel) {
+                        contenedorAdmPanel.innerHTML = `<a href="admin.html" class="bg-amber-500/20 hover:bg-amber-500 text-amber-400 hover:text-slate-950 font-black px-3 py-1.5 rounded-xl text-xs transition border border-amber-500/40 flex items-center justify-center">Adm</a>`;
+                    }
+                }
+
                 sincronizarDatosTienda(uidTiendaActual);
             } else {
                 window.location.href = "login.html";
@@ -624,10 +1242,30 @@
 
         function sincronizarDatosTienda(uid) {
             onValue(ref(db, `tiendas/${uid}`), (snapshot) => {
-                const tiendaData = snapshot.val() || {};
-                document.getElementById('infoNombreTienda').innerText = tiendaData.nombreTienda || 'Mi Tienda de Repuestos';
-                document.getElementById('infoCorreoTienda').innerText = `📧 ${tiendaData.email || 'No registrado'}`;
-                document.getElementById('infoTelefonoTienda').innerText = `📞 ${tiendaData.telefonoWsp || 'No especificado'}`;
+                tiendaDatosMemoria = snapshot.val() || {};
+                const nombre = tiendaDatosMemoria.nombreTienda || 'Mi Tienda de Repuestos';
+                const rif = tiendaDatosMemoria.rifComercial || tiendaDatosMemoria.rif || '';
+                
+                const valVerif = tiendaDatosMemoria.verified ?? tiendaDatosMemoria.verificado ?? tiendaDatosMemoria.verificada ?? tiendaDatosMemoria.isVerified;
+                const estaVerificada = valVerif === true || valVerif === 1 || ["true", "si", "verificado", "active", "1"].includes(String(valVerif).toLowerCase().trim());
+                
+                const badgeVerificado = estaVerificada 
+                    ? `<span title="Tienda Verificada" class="inline-flex items-center justify-center text-blue-500 shrink-0 align-middle">
+                        <svg class="w-5 h-5 fill-current" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                      </span>` 
+                    : '';
+
+                document.getElementById('infoNombreTienda').innerHTML = `<span>${nombre}</span> ${badgeVerificado}`;
+                document.getElementById('infoCorreoTienda').innerText = `📧 ${tiendaDatosMemoria.email || 'No registrado'}`;
+                document.getElementById('infoTelefonoTienda').innerText = `📞 ${tiendaDatosMemoria.telefonoWsp || 'No especificado'}`;
+                
+                const spanRifHeader = document.getElementById('infoRifTienda');
+                if (rif && rif.trim() !== '') {
+                    spanRifHeader.innerText = `🏢 RIF: ${rif}`;
+                    spanRifHeader.classList.remove('hidden');
+                } else {
+                    spanRifHeader.classList.add('hidden');
+                }
             });
 
             onValue(ref(db, `notificaciones_tienda/${uid}`), (snapshot) => {
@@ -670,36 +1308,7 @@
 
             onValue(ref(db, `ventas/${uid}`), (snapshot) => {
                 ventasGlobalesMemoria = snapshot.val() || {};
-                
-                const gridVentas = document.getElementById('gridVentas');
-                gridVentas.innerHTML = "";
-                const ventasArr = Object.entries(ventasGlobalesMemoria).map(([id, v]) => ({ id, ...v }));
-                ventasArr.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
-
-                if (ventasArr.length > 0) {
-                    ventasArr.forEach(v => {
-                        gridVentas.innerHTML += `
-                            <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800 flex justify-between items-center gap-2">
-                                <div class="flex-1 min-w-0">
-                                    <div class="flex items-center gap-2 mb-0.5">
-                                        <span class="text-emerald-400 font-black text-xs">$${v.precio}</span>
-                                        <span class="text-white text-xs font-bold truncate uppercase">${v.repuesto}</span>
-                                    </div>
-                                    <div class="text-[10px] text-slate-400 truncate">👤 ${v.comprador} | ${v.fecha}</div>
-                                </div>
-                                <div class="flex items-center gap-1.5">
-                                    <span class="bg-emerald-500/10 text-emerald-400 text-[9px] px-1.5 py-0.5 rounded font-bold border border-emerald-500/20">${v.tipo}</span>
-                                    <button onclick='abrirFactura(${JSON.stringify(v).replace(/'/g, "&apos;")})' class="bg-amber-500/10 hover:bg-amber-500 text-amber-400 hover:text-slate-950 font-bold px-2 py-1 rounded-lg text-[10px] transition border border-amber-500/30 cursor-pointer flex items-center gap-1">
-                                        🖨️ Factura
-                                    </button>
-                                </div>
-                            </div>
-                        `;
-                    });
-                } else {
-                    gridVentas.innerHTML = `<p class="text-slate-500 text-xs italic text-center py-2">Aún no hay transacciones registradas.</p>`;
-                }
-
+                renderizarHistorialVentas();
                 renderizarInventarioYResumen();
             });
 
@@ -753,19 +1362,121 @@
             });
         }
 
+        window.renderizarHistorialVentas = function() {
+            const gridVentas = document.getElementById('gridVentas');
+            const busquedaFecha = document.getElementById('inputBuscarVentasFecha')?.value.toLowerCase().trim() || '';
+            gridVentas.innerHTML = "";
+            
+            const ventasArr = Object.entries(ventasGlobalesMemoria).map(([id, v]) => ({ id, ...v }));
+            ventasArr.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+
+            const ventasPorDia = {};
+            ventasArr.forEach(v => {
+                let fechaCompleta = v.fecha || '';
+                let fechaSolo = fechaCompleta.split(',')[0].trim();
+                if (!ventasPorDia[fechaSolo]) {
+                    ventasPorDia[fechaSolo] = { count: 0, totalDolar: 0, items: [] };
+                }
+                ventasPorDia[fechaSolo].count += parseInt(v.cantidad || 1);
+                ventasPorDia[fechaSolo].totalDolar += parseFloat(v.precio || 0);
+                ventasPorDia[fechaSolo].items.push(v);
+            });
+
+            const diasFiltrados = Object.entries(ventasPorDia).filter(([fecha, info]) => {
+                return fecha.toLowerCase().includes(busquedaFecha);
+            });
+
+            if (diasFiltrados.length > 0) {
+                diasFiltrados.forEach(([fecha, info]) => {
+                    gridVentas.innerHTML += `
+                        <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 flex flex-col gap-2">
+                            <div class="flex justify-between items-center border-b border-slate-800 pb-1.5">
+                                <span class="text-amber-400 font-black text-xs">📅 ${fecha}</span>
+                                <div class="flex items-center gap-2 text-[10px]">
+                                    <span class="bg-amber-500/10 text-amber-300 px-2 py-0.5 rounded border border-amber-500/20 font-bold">Unidades: <strong>${info.count}</strong></span>
+                                    <span class="text-emerald-400 font-black">Total: $${info.totalDolar.toFixed(2)}</span>
+                                </div>
+                            </div>
+                            <div class="flex flex-col gap-1.5">
+                                ${info.items.map(v => `
+                                    <div class="bg-slate-900/60 p-2 rounded-lg border border-slate-800/80 flex justify-between items-center gap-2">
+                                        <div class="flex-1 min-w-0">
+                                            <div class="flex items-center gap-2 mb-0.5">
+                                                <span class="text-emerald-400 font-black text-xs">$${v.precio}</span>
+                                                <span class="text-white text-xs font-bold truncate uppercase">${v.repuesto}</span>
+                                                <span class="text-[9px] bg-amber-500/20 text-amber-300 px-1.5 py-0.2 rounded font-black border border-amber-500/30">x${v.cantidad || 1}</span>
+                                                <span class="text-[9px] text-slate-400 bg-slate-950 px-1.5 py-0.5 rounded border border-slate-800 font-bold">ID: ${v.idVenta || 'S/N'}</span>
+                                            </div>
+                                            <div class="text-[10px] text-slate-400 truncate">👤 ${v.comprador} \vert{} 📞 ${v.telefono || 'Sin teléfono'}</div>
+                                        </div>
+                                        <div class="flex items-center gap-1.5">
+                                            <button onclick='abrirFacturaFiscal(${JSON.stringify(v).replace(/'/g, "&apos;")})' class="bg-amber-500/20 hover:bg-amber-500 text-amber-400 hover:text-slate-950 font-bold px-2 py-1 rounded text-[10px] transition border border-amber-500/30 cursor-pointer" title="Emitir Factura Fiscal">Factura 📄</button>
+                                            <span class="bg-emerald-500/10 text-emerald-400 text-[9px] px-1.5 py-0.5 rounded font-bold border border-emerald-500/20">${v.tipo}</span>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                });
+            } else {
+                gridVentas.innerHTML = `<p class="text-slate-500 text-xs italic text-center py-4">No se encontraron transacciones para esa fecha.</p>`;
+            }
+        };
+
+        document.getElementById('inputBuscarVentasFecha').addEventListener('input', renderizarHistorialVentas);
+
         function renderizarInventarioYResumen() {
             const gridInventario = document.getElementById('gridMisRepuestos');
             const gridResumen = document.getElementById('gridResumenVentasRepuesto');
+            const busquedaInventario = document.getElementById('inputBuscarMiInventario')?.value.toLowerCase().trim() || '';
             
+            const btnGrid = document.getElementById('btnVistaGrid');
+            const btnList = document.getElementById('btnVistaList');
+            if (btnGrid && btnList) {
+                if (modoVistaInventario === 'grid') {
+                    btnGrid.className = "px-2.5 py-1 rounded-lg text-xs font-bold transition bg-amber-500 text-slate-950 cursor-pointer";
+                    btnList.className = "px-2.5 py-1 rounded-lg text-xs font-bold transition text-slate-400 hover:text-white cursor-pointer";
+                } else {
+                    btnList.className = "px-2.5 py-1 rounded-lg text-xs font-bold transition bg-amber-500 text-slate-950 cursor-pointer";
+                    btnGrid.className = "px-2.5 py-1 rounded-lg text-xs font-bold transition text-slate-400 hover:text-white cursor-pointer";
+                }
+            }
+
             gridInventario.innerHTML = "";
             gridResumen.innerHTML = "";
 
-            const keys = Object.keys(inventarioActivoMemoria);
-            document.getElementById('contadorMisRepuestos').innerText = `${keys.length} repuestos`;
+            if (modoVistaInventario === 'list') {
+                gridInventario.className = "flex flex-col gap-2";
+            } else {
+                gridInventario.className = "grid grid-cols-1 sm:grid-cols-2 gap-4";
+            }
+
+            const allEntries = Object.entries(inventarioActivoMemoria);
+
+            const activosCount = allEntries.filter(([_, prod]) => !prod.archivado).length;
+            const archivadosCount = allEntries.filter(([_, prod]) => !!prod.archivado).length;
+
+            document.getElementById('cantActivosBadge').innerText = activosCount;
+            document.getElementById('cantArchivadosBadge').innerText = archivadosCount;
+
+            const inventarioFiltrado = allEntries.filter(([id, prod]) => {
+                const esArchivado = !!prod.archivado;
+                if (esArchivado !== mostrarArchivados) return false;
+
+                const nombre = prod.nombre ? prod.nombre.toLowerCase() : '';
+                const oem = prod.codigoOem ? prod.codigoOem.toLowerCase() : '';
+                const modeloComp = prod.modeloCompatible ? prod.modeloCompatible.toLowerCase() : '';
+                const categoria = prod.categoria ? prod.categoria.toLowerCase() : '';
+                const vehiculo = prod.vehiculo ? prod.vehiculo.toLowerCase() : '';
+                return nombre.includes(busquedaInventario) || oem.includes(busquedaInventario) || modeloComp.includes(busquedaInventario) || categoria.includes(busquedaInventario) || vehiculo.includes(busquedaInventario);
+            });
+
+            document.getElementById('contadorMisRepuestos').innerText = `${inventarioFiltrado.length} repuestos ${mostrarArchivados ? 'archivados' : 'activos'}`;
 
             const nombresActivos = new Set();
-            Object.values(inventarioActivoMemoria).forEach(prod => {
-                if (prod.nombre) nombresActivos.add(prod.nombre.trim().toUpperCase());
+            allEntries.forEach(([id, prod]) => {
+                if (prod.nombre && !prod.archivado) nombresActivos.add(prod.nombre.trim().toUpperCase());
             });
 
             const ventasArr = Object.values(ventasGlobalesMemoria);
@@ -777,7 +1488,7 @@
                     if (!agrupadoActivos[nombreVenta]) {
                         agrupadoActivos[nombreVenta] = { cantidad: 0, totalIngresos: 0 };
                     }
-                    agrupadoActivos[nombreVenta].cantidad += 1;
+                    agrupadoActivos[nombreVenta].cantidad += parseInt(v.cantidad || 1);
                     agrupadoActivos[nombreVenta].totalIngresos += parseFloat(v.precio || 0);
                 }
             });
@@ -803,67 +1514,126 @@
                 gridResumen.innerHTML = `<p class="text-slate-500 text-xs italic p-2">No hay ventas registradas de los repuestos activos.</p>`;
             }
 
-            if (keys.length > 0) {
-                Object.entries(inventarioActivoMemoria).forEach(([id, prod]) => {
+            if (inventarioFiltrado.length > 0) {
+                inventarioFiltrado.forEach(([id, prod]) => {
                     const nombreMayus = prod.nombre ? prod.nombre.trim().toUpperCase() : '';
                     const descVal = parseInt(prod.descuento) || 0;
                     const precioOriginal = parseFloat(prod.precio) || 0;
                     const precioFinal = descVal > 0 ? precioOriginal * (1 - descVal / 100) : precioOriginal;
                     const stockActual = parseInt(prod.stock) || 0;
 
-                    const alertaStockBajo = stockActual <= 5 
-                        ? `<div class="bg-red-500/10 border border-red-500/30 text-red-400 text-[10px] font-black px-2 py-1 rounded-lg text-center uppercase tracking-wider animate-pulse mb-2">⚠️ ¡Últimas disponibles! (${stockActual})</div>` 
-                        : '';
+                    const vehProdLabel = prod.vehiculo || (prod.categoria === 'Moto' ? 'Moto' : 'Carro');
+                    const catProdLabel = prod.categoria || 'Accesorios';
+                    
+                    const oemBadge = prod.codigoOem ? `<div class="bg-slate-950 border border-slate-800 p-2 rounded-xl text-[10px] flex items-center justify-between mb-1.5 shadow-inner"><span class="text-slate-400 font-bold">🔑 OEM:</span><span class="text-amber-400 font-black uppercase tracking-wider">${prod.codigoOem.toUpperCase()}</span></div>` : '';
+                    const modeloCompBadge = prod.modeloCompatible ? `<div class="bg-slate-950 border border-slate-800 p-2 rounded-xl text-[10px] flex items-center justify-between mb-2 shadow-inner"><span class="text-slate-400 font-bold">🚗 Modelo:</span><span class="text-blue-400 font-black uppercase tracking-wider">${prod.modeloCompatible}</span></div>` : '';
+
+                    let alertaStockBajo = '';
+                    if (stockActual <= 0) {
+                        alertaStockBajo = `<div class="bg-red-500/20 border border-red-500/50 text-red-400 text-[10px] font-black px-2 py-1 rounded-lg text-center uppercase tracking-wider mb-2 flex items-center justify-center gap-1">🚫 ¡SIN STOCK (AGOTADO)!</div>`;
+                    } else if (stockActual <= 5) {
+                        alertaStockBajo = `<div class="bg-amber-500/10 border border-amber-500/30 text-amber-400 text-[10px] font-black px-2 py-1 rounded-lg text-center uppercase tracking-wider animate-pulse mb-2">⚠️ ¡Últimas disponibles! (${stockActual})</div>`;
+                    }
 
                     const ventasDeEsteProd = ventasArr.filter(v => v.repuesto && v.repuesto.trim().toUpperCase() === nombreMayus);
-                    const unidadesVendidas = ventasDeEsteProd.length;
+                    const unidadesVendidas = ventasDeEsteProd.reduce((acc, v) => acc + parseInt(v.cantidad || 1), 0);
                     const ingresosItem = ventasDeEsteProd.reduce((acc, v) => acc + parseFloat(v.precio || 0), 0);
 
-                    let imgCard = prod.imagenUrl 
-                        ? `<div class="w-full h-24 bg-slate-950 rounded-xl overflow-hidden mb-2 border border-slate-800 flex items-center justify-center p-1"><img src="${prod.imagenUrl}" class="max-w-full max-h-full object-contain"></div>` 
-                        : `<div class="w-full h-24 bg-slate-950 rounded-xl flex items-center justify-center text-slate-600 text-xl mb-2 border border-slate-800">📷</div>`;
+                    const btnArchivarHtml = prod.archivado
+                        ? `<button onclick='archivarRepuesto("${id}", false)' class="bg-emerald-600/20 hover:bg-emerald-600 text-emerald-400 hover:text-white font-bold py-1.5 px-2 rounded-lg text-[10px] transition border border-emerald-500/30 cursor-pointer" title="Desarchivar e ingresar nuevo stock">🔓 Desarchivar</button>`
+                        : `<button onclick='archivarRepuesto("${id}", true)' class="${stockActual <= 0 ? 'bg-amber-500 text-slate-950 font-black animate-pulse' : 'bg-slate-800 hover:bg-slate-700 text-amber-400'} font-bold py-1.5 px-2 rounded-lg text-[10px] transition border border-slate-700 cursor-pointer" title="Archivar repuesto fuera de stock">📦 Archivar</button>`;
 
-                    gridInventario.innerHTML += `
-                        <div class="bg-slate-900 border border-slate-800 p-3.5 rounded-2xl flex flex-col justify-between shadow-lg gap-3">
-                            <div>
-                                ${imgCard}
-                                <span class="text-[9px] uppercase font-bold text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">${prod.categoria}</span>
-                                <h4 class="text-xs font-black text-white uppercase mt-1 mb-1 truncate" title="${nombreMayus}">${nombreMayus}</h4>
-                                ${alertaStockBajo}
-                                <div class="flex items-center justify-between mb-2">
-                                    <div class="flex items-center gap-1">
-                                        <span class="text-emerald-400 font-black text-sm">$${precioFinal.toFixed(2)}</span>
-                                        ${descVal > 0 ? `<span class="text-red-400 text-[10px] font-bold">(-${descVal}%)</span>` : ''}
+                    if (modoVistaInventario === 'list') {
+                        let imgMini = prod.imagenUrl 
+                            ? `<div class="w-12 h-12 bg-slate-900 rounded-lg overflow-hidden border border-slate-800 flex items-center justify-center p-1 shrink-0"><img src="${prod.imagenUrl}" class="max-w-full max-h-full object-contain"></div>` 
+                            : `<div class="w-12 h-12 bg-slate-900 rounded-lg flex items-center justify-center text-slate-600 text-sm shrink-0 border border-slate-800">📷</div>`;
+
+                        gridInventario.innerHTML += `
+                            <div class="bg-slate-900 border border-slate-800 p-3 rounded-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 shadow-md ${prod.archivado ? 'opacity-70 border-dashed' : ''}">
+                                <div class="flex items-center gap-3 w-full sm:w-auto min-w-0">
+                                    ${imgMini}
+                                    <div class="min-w-0">
+                                        <div class="flex items-center gap-1.5 flex-wrap mb-1">
+                                            <span class="text-[9px] uppercase font-bold text-amber-500 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20">${vehProdLabel}</span>
+                                            <span class="text-[9px] uppercase font-bold text-slate-300 bg-slate-950 px-1.5 py-0.5 rounded border border-slate-800">${catProdLabel}</span>
+                                            ${stockActual <= 0 ? `<span class="bg-red-500/20 text-red-400 text-[9px] font-black px-1.5 py-0.5 rounded border border-red-500/30">AGOTADO</span>` : ''}
+                                            ${prod.codigoOem ? `<span class="bg-slate-950 text-amber-400 font-bold px-2 py-1 rounded-lg border border-slate-800 text-[9px] flex items-center gap-1 shadow-inner">🔑 OEM: <strong>${prod.codigoOem.toUpperCase()}</strong></span>` : ''}
+                                        </div>
+                                        <h4 class="text-xs font-black text-white uppercase truncate" title="${nombreMayus}">${nombreMayus}</h4>
+                                        <div class="text-[10px] text-slate-400 flex items-center gap-3 mt-1 flex-wrap">
+                                            <span>Precio: <strong class="text-emerald-400">$${precioFinal.toFixed(2)}</strong></span>
+                                            <span>Stock: <strong class="${stockActual <= 0 ? 'text-red-400 font-black' : 'text-slate-200'}">${stockActual}</strong></span>
+                                            <span class="bg-amber-500/15 text-amber-300 px-2 py-0.5 rounded-lg border border-amber-500/30 font-bold flex items-center gap-1">
+                                                🛍 Vendidas: <strong class="text-amber-200">${unidadesVendidas}</strong> <span class="text-emerald-400">($${ingresosItem.toFixed(2)})</span>
+                                            </span>
+                                        </div>
                                     </div>
-                                    <span class="text-[10px] text-slate-300 bg-slate-950 px-1.5 py-0.5 rounded border border-slate-800">Stock: <strong>${stockActual}</strong></span>
                                 </div>
-                                <div class="bg-slate-950/80 border border-slate-800 p-2.5 rounded-xl text-[11px] flex flex-col gap-1">
-                                    <div class="flex justify-between text-slate-300">
-                                        <span>Unidades vendidas:</span>
-                                        <strong class="text-amber-400">${unidadesVendidas}</strong>
-                                    </div>
-                                    <div class="flex justify-between text-slate-300">
-                                        <span>Ingresos por este ítem:</span>
-                                        <strong class="text-emerald-400">$${ingresosItem.toFixed(2)}</strong>
-                                    </div>
+                                <div class="flex items-center gap-1.5 w-full sm:w-auto justify-end border-t sm:border-t-0 pt-2 sm:pt-0 border-slate-800">
+                                    <button onclick='prepararEdicion("${id}", ${JSON.stringify(prod).replace(/'/g, "&apos;")})' class="bg-slate-800 hover:bg-slate-700 text-amber-400 font-bold px-3 py-1.5 rounded-lg text-[10px] transition border border-slate-700 cursor-pointer">Editar ✏️</button>
+                                    ${btnArchivarHtml}
+                                    ${stockActual > 0 && !prod.archivado ? `<button onclick='abrirModalVentaFisica("${id}", ${JSON.stringify(prod).replace(/'/g, "&apos;")})' class="bg-emerald-600/20 hover:bg-emerald-600 text-emerald-400 hover:text-white font-bold px-3 py-1.5 rounded-lg text-[10px] transition border border-emerald-500/30 cursor-pointer">Venta 🛒</button>` : ''}
+                                    <button onclick='eliminarRepuesto("${id}")' class="bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white font-bold px-2.5 py-1.5 rounded-lg text-[10px] transition border border-red-500/30 cursor-pointer">🗑️</button>
                                 </div>
                             </div>
-                            <div class="flex flex-col gap-1.5 pt-2 border-t border-slate-800">
-                                <div class="flex gap-1.5">
-                                    <button onclick='prepararEdicion("${id}", ${JSON.stringify(prod).replace(/'/g, "&apos;")})' class="bg-slate-800 hover:bg-slate-700 text-amber-400 font-bold py-1.5 rounded-lg text-[10px] transition border border-slate-700 cursor-pointer flex-1">Editar ✏️</button>
-                                    <button onclick='eliminarRepuesto("${id}")' class="bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-slate-950 font-bold py-1.5 px-2 rounded-lg text-[10px] transition border border-red-500/30 cursor-pointer">🗑️</button>
+                        `;
+                    } else {
+                        let imgCard = prod.imagenUrl 
+                            ? `<div class="w-full h-24 bg-slate-950 rounded-xl overflow-hidden mb-2 border border-slate-800 flex items-center justify-center p-1"><img src="${prod.imagenUrl}" class="max-w-full max-h-full object-contain"></div>` 
+                            : `<div class="w-full h-24 bg-slate-950 rounded-xl flex items-center justify-center text-slate-600 text-xl mb-2 border border-slate-800">📷</div>`;
+
+                        gridInventario.innerHTML += `
+                            <div class="bg-slate-900 border border-slate-800 p-3.5 rounded-2xl flex flex-col justify-between shadow-lg gap-3 ${prod.archivado ? 'opacity-70 border-dashed' : ''}">
+                                <div>
+                                    ${imgCard}
+                                    <div class="flex items-center gap-1 mb-1.5 flex-wrap">
+                                        <span class="text-[9px] uppercase font-bold text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">${vehProdLabel}</span>
+                                        <span class="text-[9px] uppercase font-bold text-slate-300 bg-slate-950 px-2 py-0.5 rounded border border-slate-800">${catProdLabel}</span>
+                                    </div>
+                                    ${oemBadge}
+                                    ${modeloCompBadge}
+                                    <h4 class="text-xs font-black text-white uppercase mt-1 mb-1 truncate" title="${nombreMayus}">${nombreMayus}</h4>
+                                    ${alertaStockBajo}
+                                    <div class="flex items-center justify-between mb-2">
+                                        <div class="flex items-center gap-1">
+                                            <span class="text-emerald-400 font-black text-sm">$${precioFinal.toFixed(2)}</span>
+                                            ${descVal > 0 ? `<span class="text-red-400 text-[10px] font-bold">(-${descVal}%)</span>` : ''}
+                                        </div>
+                                        <span class="text-[10px] text-slate-300 bg-slate-950 px-1.5 py-0.5 rounded border border-slate-800">Stock: <strong class="${stockActual <= 0 ? 'text-red-400 font-black' : 'text-slate-200'}">${stockActual}</strong></span>
+                                    </div>
+                                    <div class="bg-amber-500/10 border border-amber-500/30 p-2.5 rounded-xl text-[11px] flex flex-col gap-1 shadow-inner">
+                                        <div class="flex justify-between items-center text-slate-200">
+                                            <span class="font-bold text-amber-300 flex items-center gap-1">🛍️ Unidades Vendidas:</span>
+                                            <span class="bg-amber-500 text-slate-950 font-black px-2 py-0.5 rounded-full text-xs shadow">${unidadesVendidas}</span>
+                                        </div>
+                                        <div class="flex justify-between items-center text-slate-300 border-t border-amber-500/20 pt-1 mt-0.5">
+                                            <span class="text-[10px] text-slate-400 uppercase">Ingresos Totales:</span>
+                                            <strong class="text-emerald-400 font-black">$${ingresosItem.toFixed(2)}</strong>
+                                        </div>
+                                    </div>
                                 </div>
-                                <button onclick='abrirModalVentaFisica("${id}", ${JSON.stringify(prod).replace(/'/g, "&apos;")})' class="bg-emerald-600/20 hover:bg-emerald-600 text-emerald-400 hover:text-white font-bold py-2 rounded-lg text-[10px] transition border border-emerald-500/30 cursor-pointer text-center">
-                                    Registrar Venta Local 🛒
-                                </button>
+                                <div class="flex flex-col gap-1.5 pt-2 border-t border-slate-800">
+                                    <div class="flex gap-1.5">
+                                        <button onclick='prepararEdicion("${id}", ${JSON.stringify(prod).replace(/'/g, "&apos;")})' class="bg-slate-800 hover:bg-slate-700 text-amber-400 font-bold py-1.5 rounded-lg text-[10px] transition border border-slate-700 cursor-pointer flex-1">Editar ✏️</button>
+                                        ${btnArchivarHtml}
+                                        <button onclick='eliminarRepuesto("${id}")' class="bg-red-500/10 hover:bg-red-500 text-slate-950 font-bold py-1.5 px-2 rounded-lg text-[10px] transition border border-red-500/30 cursor-pointer">🗑️</button>
+                                    </div>
+                                    ${stockActual > 0 && !prod.archivado ? `
+                                        <button onclick='abrirModalVentaFisica("${id}", ${JSON.stringify(prod).replace(/'/g, "&apos;")})' class="bg-emerald-600/20 hover:bg-emerald-600 text-emerald-400 hover:text-white font-bold py-2 rounded-lg text-[10px] transition border border-emerald-500/30 cursor-pointer text-center">
+                                            Registrar Venta Local 🛒
+                                        </button>
+                                    ` : ''}
+                                </div>
                             </div>
-                        </div>
-                    `;
+                        `;
+                    }
                 });
             } else {
-                gridInventario.innerHTML = `<p class="text-slate-500 text-xs italic col-span-full text-center py-10">No tienes repuestos publicados aún.</p>`;
+                gridInventario.innerHTML = `<p class="text-slate-500 text-xs italic col-span-full text-center py-10">No hay repuestos en la categoría de ${mostrarArchivados ? 'archivados' : 'activos'}.</p>`;
             }
         }
+
+        document.getElementById('inputBuscarMiInventario').addEventListener('input', renderizarInventarioYResumen);
 
         window.procesarVentaDelivery = function(idPedido, ped) {
             if (!confirm(`¿Confirmar venta por delivery del repuesto "${ped.repuesto}" a ${ped.cliente}?`)) return;
@@ -882,12 +1652,15 @@
             const datosVenta = {
                 repuesto: nombreBusqueda,
                 precio: parseFloat(ped.precio).toFixed(2),
+                precioUnitario: parseFloat(ped.precio).toFixed(2),
+                cantidad: 1,
                 comprador: ped.cliente,
                 telefono: ped.telefono,
                 notas: 'Venta confirmada vía Delivery',
                 fecha: new Date().toLocaleString(),
                 timestamp: Date.now(),
-                tipo: 'Delivery'
+                tipo: 'Delivery',
+                idVenta: "VNT-" + Math.floor(Math.random() * 900000 + 100000)
             };
 
             const promesas = [
@@ -896,14 +1669,18 @@
             ];
 
             if (idProdEncontrado && stockActualProd > 0) {
-                promesas.push(update(ref(db, `inventarios/${uidTiendaActual}/${idProdEncontrado}`), { stock: stockActualProd - 1 }));
+                const nuevoStock = stockActualProd - 1;
+                const updateStockObj = { stock: nuevoStock };
+                if (nuevoStock <= 0) {
+                    updateStockObj.archivado = true;
+                }
+                promesas.push(update(ref(db, `inventarios/${uidTiendaActual}/${idProdEncontrado}`), updateStockObj));
             }
 
             Promise.all(promesas)
                 .then(() => {
                     reproducirSonidoAlerta();
                     alert("¡Venta por delivery registrada con éxito!");
-                    abrirFactura(datosVenta);
                 })
                 .catch(err => alert("Error: " + err.message));
         };
@@ -915,14 +1692,39 @@
             }
         };
 
+        function actualizarTotalVentaFisica() {
+            if (!productoVentaActual) return;
+            const descVal = parseInt(productoVentaActual.descuento) || 0;
+            const precioOrig = parseFloat(productoVentaActual.precio) || 0;
+            const precioUnitarioFinal = descVal > 0 ? precioOrig * (1 - descVal / 100) : precioOrig;
+            
+            let cantidad = parseInt(document.getElementById('ventaCantidad').value) || 1;
+            if (cantidad < 1) cantidad = 1;
+
+            const totalCalculado = precioUnitarioFinal * cantidad;
+            document.getElementById('modalVentaTotalPagar').innerText = `$${totalCalculado.toFixed(2)}`;
+        }
+
+        document.getElementById('ventaCantidad').addEventListener('input', actualizarTotalVentaFisica);
+
         window.abrirModalVentaFisica = function(id, prod) {
             productoVentaActual = { id, ...prod };
             document.getElementById('modalVentaTituloProd').innerText = prod.nombre ? prod.nombre.toUpperCase() : '';
+            
             const descVal = parseInt(prod.descuento) || 0;
             const precioOrig = parseFloat(prod.precio) || 0;
             const precioFinal = descVal > 0 ? precioOrig * (1 - descVal / 100) : precioOrig;
+            const stockDisp = parseInt(prod.stock) || 0;
+
             document.getElementById('modalVentaPrecio').innerText = `$${precioFinal.toFixed(2)}`;
-            
+            document.getElementById('modalVentaStockDisponible').innerText = stockDisp;
+
+            const inputCantidad = document.getElementById('ventaCantidad');
+            inputCantidad.value = "1";
+            inputCantidad.max = stockDisp;
+
+            actualizarTotalVentaFisica();
+
             document.getElementById('ventaComprador').value = "";
             document.getElementById('ventaTelefono').value = "";
             document.getElementById('ventaNotas').value = "";
@@ -938,55 +1740,88 @@
             modal.classList.remove('flex');
         };
 
-        document.getElementById('btnConfirmarVentaFisica').addEventListener('click', () => {
+        window.ejecutarVentaPresencial = function(imprimirFactura = false) {
             const comprador = document.getElementById('ventaComprador').value.trim();
             const telefono = document.getElementById('ventaTelefono').value.trim();
             const notas = document.getElementById('ventaNotas').value.trim();
+            const cantidad = parseInt(document.getElementById('ventaCantidad').value) || 1;
 
             if (!comprador || !telefono) {
-                return alert("Por favor ingresa el nombre del comprador y su teléfono.");
+                return alert("⚠️ Por favor ingresa obligatoriamente el nombre del comprador y su número de teléfono.");
             }
 
             const stockActual = parseInt(productoVentaActual.stock) || 0;
             if (stockActual <= 0) {
                 return alert("No hay stock disponible para este repuesto.");
             }
+            if (cantidad <= 0) {
+                return alert("La cantidad debe ser de al menos 1 unidad.");
+            }
+            if (cantidad > stockActual) {
+                return alert(`No puedes vender ${cantidad} unidades. El stock máximo disponible es de ${stockActual}.`);
+            }
 
-            const nuevoStock = stockActual - 1;
+            const nuevoStock = stockActual - cantidad;
             const descVal = parseInt(productoVentaActual.descuento) || 0;
             const precioOrig = parseFloat(productoVentaActual.precio) || 0;
-            const precioFinal = descVal > 0 ? precioOrig * (1 - descVal / 100) : precioOrig;
+            const precioUnitarioFinal = descVal > 0 ? precioOrig * (1 - descVal / 100) : precioOrig;
+            const precioTotalVenta = precioUnitarioFinal * cantidad;
 
             const datosVenta = {
                 repuesto: productoVentaActual.nombre.toUpperCase(),
-                precio: precioFinal.toFixed(2),
+                precio: precioTotalVenta.toFixed(2),
+                precioUnitario: precioUnitarioFinal.toFixed(2),
+                cantidad: cantidad,
                 comprador: comprador,
                 telefono: telefono,
                 notas: notas || 'Venta presencial en local',
                 fecha: new Date().toLocaleString(),
                 timestamp: Date.now(),
-                tipo: 'Presencial'
+                tipo: 'Presencial',
+                idVenta: "VNT-" + Math.floor(Math.random() * 900000 + 100000)
             };
+
+            const updatesInventario = { stock: nuevoStock };
+
+            let mensajeExtra = "";
+            if (nuevoStock <= 0) {
+                updatesInventario.archivado = true;
+                mensajeExtra = " El repuesto fue archivado automáticamente por agotamiento de stock.";
+            }
 
             Promise.all([
                 push(ref(db, `ventas/${uidTiendaActual}`), datosVenta),
-                update(ref(db, `inventarios/${uidTiendaActual}/${productoVentaActual.id}`), { stock: nuevoStock })
+                update(ref(db, `inventarios/${uidTiendaActual}/${productoVentaActual.id}`), updatesInventario)
             ]).then(() => {
                 reproducirSonidoAlerta();
-                alert("¡Venta registrada con éxito y stock actualizado!");
                 cerrarModalVenta();
-                abrirFactura(datosVenta);
+
+                if (imprimirFactura) {
+                    abrirFacturaFiscal(datosVenta);
+                } else {
+                    alert(`¡Venta registrada con éxito (${cantidad} uds) y stock actualizado!${mensajeExtra}`);
+                }
             }).catch(err => alert("Error: " + err.message));
-        });
+        };
 
         document.getElementById('formRepuesto').addEventListener('submit', (e) => {
             e.preventDefault();
             if (!uidTiendaActual) return;
 
             const editId = document.getElementById('editIdProd').value;
+            
+            const imagenFinal = imagenBase64Actual || (editId ? window._tempImgUrlAnterior || "" : "");
+            if (!imagenFinal) {
+                alert("¡Es obligatorio subir una foto para el repuesto!");
+                return;
+            }
+
             const nombre = document.getElementById('inputNombre').value.trim();
+            const codigoOem = document.getElementById('inputOem').value.trim().toUpperCase();
+            const modeloCompatible = document.getElementById('inputModeloCompatible').value.trim();
+            const vehiculo = document.getElementById('inputVehiculo').value;
             const categoria = document.getElementById('inputCategoria').value;
-            const stock = document.getElementById('inputStock').value;
+            const stock = parseInt(document.getElementById('inputStock').value) || 0;
             const precio = document.getElementById('inputPrecio').value;
             const descuento = document.getElementById('inputDescuento').value || "0";
             const ofreceDelivery = document.getElementById('checkDelivery').checked;
@@ -994,13 +1829,17 @@
 
             const datosRepuesto = {
                 nombre,
+                codigoOem,
+                modeloCompatible,
+                vehiculo,
                 categoria,
                 stock,
                 precio,
                 descuento,
                 ofreceDelivery,
                 retiroTienda,
-                imagenUrl: imagenBase64Actual || (editId ? window._tempImgUrlAnterior || "" : "")
+                imagenUrl: imagenFinal,
+                archivado: stock <= 0 ? true : false
             };
 
             const dbRef = ref(db, `inventarios/${uidTiendaActual}`);
@@ -1025,8 +1864,17 @@
         window.prepararEdicion = function(id, prod) {
             document.getElementById('editIdProd').value = id;
             document.getElementById('inputNombre').value = prod.nombre || '';
-            document.getElementById('inputCategoria').value = prod.categoria || 'Motor';
-            document.getElementById('inputStock').value = prod.stock || '';
+            document.getElementById('inputOem').value = prod.codigoOem || '';
+            document.getElementById('inputModeloCompatible').value = prod.modeloCompatible || '';
+            document.getElementById('inputVehiculo').value = prod.vehiculo || (prod.categoria === 'Moto' ? 'Moto' : 'Carro');
+            
+            let catGuardada = prod.categoria || 'Motor';
+            if (['Aceite de Carro', 'Aceite de Moto'].includes(catGuardada)) {
+                catGuardada = 'Lubricantes';
+            }
+            document.getElementById('inputCategoria').value = catGuardada;
+            
+            document.getElementById('inputStock').value = prod.stock ?? '';
             document.getElementById('inputPrecio').value = prod.precio || '';
             document.getElementById('inputDescuento').value = prod.descuento || '';
             document.getElementById('checkDelivery').checked = !!prod.ofreceDelivery;
@@ -1047,7 +1895,7 @@
                 textoSinPreview.classList.remove('hidden');
             }
 
-            document.getElementById('tituloFormRepuesto').innerText = "✏️ Editar Repuesto";
+            document.getElementById('tituloFormRepuesto').innerText = "✏ Editar Repuesto";
             document.getElementById('btnGuardarProd').innerText = "Actualizar Cambios 💾";
             document.getElementById('btnCancelarEdicion').classList.remove('hidden');
             window.scrollTo({ top: 0, behavior: 'smooth' });
